@@ -143,8 +143,7 @@
     var btn = document.createElement("button");
     btn.type = "button"; btn.id = "authBtn";
     if (sessionUser) btn.className = "on";
-    var label = sessionUser ? "Sign out (" + sessionUser.email + ")" : "Editor sign in";
-    btn.title = label; btn.setAttribute("aria-label", label);
+    btn.setAttribute("aria-label", sessionUser ? "Sign out" : "Editor sign in");
     btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">' +
       '<path d="M12 3v9"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg>';
     header.appendChild(btn);
