@@ -268,7 +268,7 @@ html, body { overflow-x: hidden; }
     <button type="button" role="tab" id="tabCal" aria-controls="viewCal" aria-selected="false">Content calendar</button>
     <div class="hidebar" id="hideBar">
       <button type="button" class="hidebtn" id="hideSummary" aria-expanded="true" aria-controls="summaryBox">Summary</button>
-      <button type="button" class="hidebtn" id="hideAttn" aria-expanded="true" aria-controls="attnBox">Needs attention</button>
+      <button type="button" class="hidebtn" id="hideAttn" aria-expanded="false" aria-controls="attnBox">Needs attention</button>
     </div>
   </nav>
 
@@ -303,7 +303,7 @@ html, body { overflow-x: hidden; }
     <div class="tile" id="lateTile"><div class="k">Overdue (past, not posted)</div><div class="v" id="tLate">-</div></div>
   </section>
 
-  <section class="panel attn" aria-label="Needs attention" id="attnBox">
+  <section class="panel attn" aria-label="Needs attention" id="attnBox" hidden>
     <h2>Needs attention <span class="fine" id="attnSub"></span></h2>
     <div id="attnBody"></div>
   </section>
@@ -1062,10 +1062,10 @@ html, body { overflow-x: hidden; }
   document.getElementById("tabCal").addEventListener("click", function () { showTab("calendar"); });
   window.addEventListener("hashchange", function () { showTab(location.hash === "#calendar" ? "calendar" : "board"); });
 
-  [["hideSummary", "summaryBox", "Summary"], ["hideAttn", "attnBox", "Needs attention"]].forEach(function (h) {
-    var btn = document.getElementById(h[0]), box = document.getElementById(h[1]), key = "pbHide_" + h[1];
+  [["hideSummary", "summaryBox", "Summary", false], ["hideAttn", "attnBox", "Needs attention", true]].forEach(function (h) {
+    var btn = document.getElementById(h[0]), box = document.getElementById(h[1]), key = "pbHide2_" + h[1];
     function apply(hidden) { box.hidden = hidden; btn.setAttribute("aria-expanded", String(!hidden)); btn.textContent = h[2]; btn.appendChild(el("span", { class: "chev", "aria-hidden": "true" })); btn.title = (hidden ? "Show " : "Hide ") + h[2].toLowerCase(); }
-    var start = false; try { start = localStorage.getItem(key) === "1"; } catch (e) {}
+    var start = h[3]; try { var saved = localStorage.getItem(key); if (saved !== null) start = saved === "1"; } catch (e) {}
     apply(start);
     btn.addEventListener("click", function () { var hid = !box.hidden; apply(hid); try { localStorage.setItem(key, hid ? "1" : "0"); } catch (e) {} });
   });
