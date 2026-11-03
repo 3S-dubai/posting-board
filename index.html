@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>3S and BizCity Posting Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Layout: month rail on the left, the selected day's posts on the right, summary strip on top */
+  --bg: #f4f6f8;
+  --panel: #ffffff;
+  --ink: #18222d;
+  --muted: #5d6b79;
+  --line: #dde3e9;
+  --accent: #2d5275;
+  --brand3s: #2d5275;
+  --brandbc: #9a7440;
+  --ok: #1e7a4c; --okbg: #e3f4ea;
+  --warn: #9a6500; --warnbg: #fdf1d8;
+  --bad: #b3261e; --badbg: #fbe4e2;
+  --info: #1f5fa8; --infobg: #e3eefb;
+  --idle: #6b7785; --idlebg: #eef1f4;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161c; --panel: #19212a; --ink: #e6ebf0; --muted: #9aa8b5; --line: #2b3641;
+    --accent: #8fb6dc; --brand3s: #8fb6dc; --brandbc: #d2a86b;
+    --ok: #6fd19b; --okbg: #17352a; --warn: #f0c060; --warnbg: #3a2e12;
+    --bad: #ff8a80; --badbg: #3d1c1a; --info: #8cbcf5; --infobg: #172c45;
+    --idle: #a3afbb; --idlebg: #222c36; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161c; --panel: #19212a; --ink: #e6ebf0; --muted: #9aa8b5; --line: #2b3641;
+  --accent: #8fb6dc; --brand3s: #8fb6dc; --brandbc: #d2a86b;
+  --ok: #6fd19b; --okbg: #17352a; --warn: #f0c060; --warnbg: #3a2e12;
+  --bad: #ff8a80; --badbg: #3d1c1a; --info: #8cbcf5; --infobg: #172c45;
+  --idle: #a3afbb; --idlebg: #222c36; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--font-body); }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1280px; margin: 0 auto; padding: 18px 16px 40px; display: grid; gap: 16px; }
+header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; justify-content: space-between; }
+h1 { margin: 0; font-size: 22px; letter-spacing: -0.01em; text-wrap: balance; }
+.sub { color: var(--muted); font-size: 13px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
+.seg button { border: 0; background: transparent; padding: 7px 12px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--panel); }
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 7px 14px; cursor: pointer; }
+.btn.primary { background: var(--accent); color: var(--panel); border-color: var(--accent); font-weight: 600; }
+.btn:hover { filter: brightness(0.97); }
+select.f { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 7px 10px; }
+.notice { padding: 10px 14px; border-radius: 8px; background: var(--warnbg); color: var(--warn); font-size: 13px; }
+.notice[hidden] { display: none; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.tile .k { color: var(--muted); font-size: 12px; }
+.tile .v { font: 600 22px/1.2 var(--font-num); font-variant-numeric: tabular-nums; }
+.tile .bar { height: 6px; border-radius: 3px; background: var(--idlebg); margin-top: 8px; overflow: hidden; }
+.tile .bar i { display: block; height: 100%; background: var(--ok); }
+.tile.alert .v { color: var(--bad); }
+.main { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start; }
+@media (max-width: 860px) { .main { grid-template-columns: 1fr; } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.cal h2, .day h2 { font-size: 15px; margin: 0 0 10px; }
+.grid7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.dow { font-size: 11px; color: var(--muted); text-align: center; padding-bottom: 2px; }
+.cell { aspect-ratio: 1 / 1; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); cursor: pointer; display: grid; place-items: center; position: relative; font: 500 13px var(--font-num); padding: 0; }
+.cell.blank { visibility: hidden; }
+.cell.other, .ccal-day.other { opacity: 0.8; border-style: dashed; }
+.cell.other { font-size: 10px; }
+img.flag { height: 0.95em; width: auto; vertical-align: -0.12em; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0,0,0,0.12); }
+.cell .dot { position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--idle); }
+.cell.s-done .dot { background: var(--ok); }
+.cell.s-part .dot { background: var(--warn); }
+.cell.s-late .dot { background: var(--bad); }
+.cell.s-none .dot { display: none; }
+.cell.today { border-color: var(--accent); border-width: 2px; }
+.cell[aria-selected="true"] { background: var(--accent); color: var(--panel); }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--muted); margin-top: 10px; }
+.legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; background: var(--c); }
+.dayhead { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.daynav { display: flex; gap: 6px; }
+.brandblock { margin-top: 12px; }
+.brandblock h3 { font-size: 13px; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+.brandblock h3::before { content: ""; width: 4px; height: 16px; border-radius: 2px; background: var(--b); }
+.tbl { width: 100%; border-collapse: collapse; }
+.tblwrap { overflow-x: auto; }
+.tbl th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.tbl td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tbl tr:last-child td { border-bottom: 0; }
+.plat { font-weight: 600; white-space: nowrap; }
+.type { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.title { min-width: 0; }
+.pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.st-Planned { background: var(--idlebg); color: var(--idle); }
+.st-Ready { background: var(--infobg); color: var(--info); }
+.st-Posted { background: var(--okbg); color: var(--ok); }
+.st-Skipped { background: var(--idlebg); color: var(--idle); text-decoration: line-through; }
+.st-Overdue { background: var(--badbg); color: var(--bad); }
+select.status { border: 1px solid var(--line); border-radius: 999px; padding: 3px 8px; font-size: 12px; font-weight: 600; background: var(--panel); }
+input.link { width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; background: var(--panel); }
+a.open { color: var(--accent); font-size: 12px; white-space: nowrap; }
+.empty { color: var(--muted); padding: 10px 0; }
+dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--ink); width: min(860px, calc(100% - 32px)); padding: 0; }
+dialog::backdrop { background: rgba(10, 16, 22, 0.45); }
+.dlg { padding: 18px; display: grid; gap: 12px; }
+.dlg h2 { margin: 0; font-size: 17px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.row label { font-size: 12px; color: var(--muted); display: grid; gap: 3px; }
+textarea.out { width: 100%; min-height: 300px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font: 12.5px/1.5 var(--font-num); background: var(--bg); color: var(--ink); }
+.fine { font-size: 12px; color: var(--muted); }
+.attn h2 { font-size: 15px; margin: 0 0 4px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.attn .groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 14px; margin-top: 8px; }
+.attn h3 { font-size: 13px; margin: 0 0 6px; }
+.attn h3 .count { display: inline-block; min-width: 22px; text-align: center; border-radius: 999px; padding: 0 7px; margin-left: 6px; font: 600 12px var(--font-num); }
+.attn .late h3 .count { background: var(--badbg); color: var(--bad); }
+.attn .today h3 .count { background: var(--infobg); color: var(--info); }
+.aitem { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+.aitem .when { font: 500 12px var(--font-num); color: var(--accent); background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; cursor: pointer; align-self: start; white-space: nowrap; }
+.aitem .what { font-size: 13px; }
+.aitem .what b { font-weight: 600; }
+.aitem .msgwrap { grid-column: 2; }
+.aitem .ctl { grid-column: 2; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.aitem .ctl input.link { flex: 1 1 200px; }
+.view { display: grid; gap: 16px; }
+.tabs { align-items: center; flex-wrap: wrap; }
+.hidebar { display: flex; gap: 6px; margin-left: auto; padding: 4px 0; align-items: center; }
+.tabs .hidebtn { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; margin: 0; font-size: 12px; font-weight: 500; color: var(--muted); background: var(--panel); }
+.tabs .hidebtn:hover { border-color: var(--accent); color: var(--accent); }
+.tabs .hidebtn[aria-expanded="false"] { color: var(--panel); background: var(--accent); border-color: var(--accent); }
+.hidebar[hidden] { display: none; }
+.hidebtn { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 3px 12px; font-size: 12px; cursor: pointer; color: var(--muted); }
+.hidebtn[aria-expanded="false"] { color: var(--accent); border-color: var(--accent); }
+#summaryBox[hidden], #attnBox[hidden] { display: none; }
+.view[hidden], .ccal[hidden] { display: none; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
+.tabs button { border: 0; background: transparent; padding: 9px 14px; cursor: pointer; font-weight: 600; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.ccal-head { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.ccal-head h2 { font-size: 15px; margin: 0; }
+.ccal-wrap { overflow-x: auto; margin-top: 10px; }
+.ccal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.ccal-dow { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; padding: 0 4px; }
+.ccal-day { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); min-height: 120px; padding: 6px; display: grid; align-content: start; gap: 5px; }
+.ccal-day.blank { visibility: hidden; }
+.ccal-day.today { border-color: var(--accent); border-width: 2px; }
+.ccal-day .dn { display: flex; justify-content: space-between; font: 600 12px var(--font-num); color: var(--muted); }
+.ccal-day .dn button { border: 0; background: transparent; color: var(--accent); cursor: pointer; font: inherit; padding: 0; }
+.citem { text-align: left; border: 1px solid var(--line); border-left: 4px solid var(--st); border-radius: 6px; padding: 4px 6px; background: var(--bg); cursor: pointer; font-size: 12px; line-height: 1.35; display: grid; gap: 1px; color: var(--ink); width: 100%; }
+.citem:hover { border-color: var(--accent); }
+.citem .cb { font-size: 10.5px; font-weight: 700; color: var(--b); text-transform: uppercase; letter-spacing: 0.03em; }
+.citem .ct { color: var(--muted); font-size: 11px; }
+.citem .tt { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.tblwrap[hidden], .ccal-wrap[hidden] { display: none; }
+.ctbl { margin-top: 10px; }
+.ctbl tr.dayrow td { background: var(--bg); font-weight: 700; font-size: 12.5px; padding-top: 10px; }
+.ctbl tr.prow { cursor: pointer; }
+.ctbl tr.prow:hover td { background: var(--infobg); }
+.ctbl td.co { white-space: nowrap; font-weight: 600; color: var(--b); }
+.ctbl td.ln a { color: var(--accent); font-size: 12px; }
+.abrand { font-size: 12px; font-weight: 700; margin: 10px 0 0; display: flex; align-items: center; gap: 6px; }
+.abrand::before { content: ""; width: 4px; height: 14px; border-radius: 2px; background: var(--b); }
+textarea.link { resize: vertical; font: inherit; min-height: 80px; }
+.btn.danger { background: var(--bad); border-color: var(--bad); color: #fff; }
+.btn.danger-o { color: var(--bad); border-color: var(--bad); margin-right: auto; }
+.delrow { background: var(--badbg); border-radius: 8px; padding: 8px 10px; }
+.delrow[hidden], .btn[hidden] { display: none; }
+.editbtn { margin-top: 6px; border: 1px solid var(--line); background: var(--panel); border-radius: 6px; padding: 2px 9px; font-size: 12px; cursor: pointer; color: var(--accent); }
+.ok-note { color: var(--ok); font-size: 13px; padding: 6px 0; }
+.msgbtn { margin-top: 6px; border: 1px solid var(--line); background: var(--panel); border-radius: 6px; padding: 3px 9px; font-size: 12px; cursor: pointer; color: var(--accent); }
+.msg { margin-top: 8px; padding: 10px 12px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); display: grid; gap: 8px; }
+.msg[hidden] { display: none; }
+.msg pre { margin: 0; white-space: pre-wrap; word-break: break-word; font: 13px/1.5 var(--font-body); }
+.msg .mlink { font: 12px/1.5 var(--font-num); color: var(--muted); word-break: break-all; white-space: pre-line; }
+.msg .row { gap: 6px; }
+
+/* ---------- responsive: fit any window without horizontal scrolling ---------- */
+html, body { overflow-x: hidden; }
+.wrap { width: 100%; }
+.citem { min-width: 0; }
+.citem .tt, .citem .ct, .citem .cb { overflow-wrap: anywhere; }
+@media (max-width: 1100px) {
+  .ccal-day { min-height: 100px; padding: 5px; }
+  .citem { font-size: 11px; padding: 3px 5px; }
+  .citem .ct { display: none; }
+}
+@media (max-width: 860px) {
+  .wrap { padding: 12px 10px 32px; gap: 12px; }
+  header.top { align-items: flex-start; }
+  .controls { width: 100%; }
+  .controls .seg { flex: 1 1 auto; }
+  .controls .seg button { flex: 1 1 0; padding: 7px 8px; }
+  .tabs { gap: 0; }
+  .tabs button { padding: 8px 10px; }
+  .hidebar { width: 100%; margin-left: 0; justify-content: flex-end; }
+  /* content calendar becomes a day list */
+  .ccal-grid { grid-template-columns: 1fr; }
+  .ccal-dow, .ccal-day.blank { display: none; }
+  .ccal-day { min-height: 0; }
+  .ccal-day:not(:has(.citem)) { display: none; }
+  .citem .ct { display: block; }
+  /* tables become stacked cards */
+  .tbl thead { display: none; }
+  .tbl, .tbl tbody, .tbl tr, .tbl td { display: block; width: 100%; }
+  .tbl tr { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; margin-bottom: 8px; background: var(--panel); }
+  .tbl td { border: 0; padding: 3px 0; }
+  .ctbl tr.dayrow { border: 0; background: transparent; padding: 8px 0 2px; margin: 0; }
+  .ctbl tr.dayrow td { background: transparent; padding: 0; }
+  .tblwrap { overflow-x: visible; }
+  .dayhead { flex-direction: column; align-items: flex-start; }
+  .main { grid-template-columns: 1fr; }
+  .cell { aspect-ratio: auto; height: 40px; }
+  .aitem { grid-template-columns: 1fr; }
+  .aitem .when { justify-self: start; }
+  .aitem .ctl, .aitem .msgwrap { grid-column: 1; }
+  dialog { width: calc(100% - 16px); }
+  textarea.out { min-height: 240px; }
+}
+@media (max-width: 480px) {
+  h1 { font-size: 19px; }
+  .tile .v { font-size: 19px; }
+  .btn, select.f { padding: 6px 10px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Posting Board</h1>
+      <div class="sub">3S Business and BizCity Group, November 2026. Every planned post, its status and its live link.</div>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Brand">
+        <button type="button" data-brand="all" aria-pressed="true">Both brands</button>
+        <button type="button" data-brand="3S Business" aria-pressed="false">3S Business</button>
+        <button type="button" data-brand="BizCity Group" aria-pressed="false">BizCity Group</button>
+      </div>
+      <select class="f" id="platFilter" aria-label="Platform"><option value="all">All platforms</option></select>
+      <button type="button" class="btn" id="addBtn" hidden>Add post</button>
+      <button type="button" class="btn primary" id="reportBtn">Report</button>
+    </div>
+  </header>
+
+  <div class="notice" id="notice" hidden></div>
+
+  <nav class="tabs" role="tablist" aria-label="Views">
+    <button type="button" role="tab" id="tabBoard" aria-controls="viewBoard" aria-selected="true">Posting board</button>
+    <button type="button" role="tab" id="tabCal" aria-controls="viewCal" aria-selected="false">Content calendar</button>
+    <div class="hidebar" id="hideBar">
+      <button type="button" class="hidebtn" id="hideSummary" aria-expanded="true" aria-controls="summaryBox">Hide summary</button>
+      <button type="button" class="hidebtn" id="hideAttn" aria-expanded="true" aria-controls="attnBox">Hide needs attention</button>
+    </div>
+  </nav>
+
+  <section class="panel ccal" id="viewCal" role="tabpanel" aria-labelledby="tabCal" hidden>
+    <div class="ccal-head">
+      <h2>Content calendar, November 2026</h2>
+      <div class="controls">
+        <label class="fine" for="chanSel">Channel</label>
+        <select class="f" id="chanSel"></select>
+        <div class="seg" role="group" aria-label="Layout">
+          <button type="button" id="layCal" aria-pressed="true">Calendar</button>
+          <button type="button" id="layTbl" aria-pressed="false">Table</button>
+        </div>
+        <button type="button" class="btn" id="dlCsv" hidden>Download table</button>
+        <button type="button" class="btn primary" id="dlPdf" hidden>Download PDF</button>
+      </div>
+    </div>
+    <div class="fine" id="ccalMeta"></div>
+    <div class="ccal-wrap" id="ccalCalWrap"><div class="ccal-grid" id="ccalGrid"></div></div>
+    <div class="tblwrap" id="ccalTblWrap" hidden><table class="tbl ctbl" id="ccalTbl"></table></div>
+    <div class="legend">
+      <span style="--c: var(--ok)">Posted</span>
+      <span style="--c: var(--info)">Ready</span>
+      <span style="--c: var(--idle)">Planned</span>
+      <span style="--c: var(--bad)">Overdue</span>
+    </div>
+  </section>
+
+  <div id="viewBoard" role="tabpanel" aria-labelledby="tabBoard" class="view">
+  <section class="tiles" aria-label="Summary" id="summaryBox">
+    <div class="tile"><div class="k">Today</div><div class="v" id="tToday">-</div><div class="bar"><i id="bToday" style="width:0"></i></div></div>
+    <div class="tile" id="lateTile"><div class="k">Overdue (past, not posted)</div><div class="v" id="tLate">-</div></div>
+    <div class="tile"><div class="k">Posted without a link</div><div class="v" id="tNoLink">-</div></div>
+  </section>
+
+  <section class="panel attn" aria-label="Needs attention" id="attnBox">
+    <h2>Needs attention <span class="fine" id="attnSub"></span></h2>
+    <div id="attnBody"></div>
+  </section>
+
+  <div class="main">
+    <section class="panel cal" aria-label="Month">
+      <h2 id="calTitle">November 2026</h2>
+      <div class="grid7" id="calGrid"></div>
+      <div class="legend">
+        <span style="--c: var(--ok)">All posted</span>
+        <span style="--c: var(--warn)">Partly posted</span>
+        <span style="--c: var(--bad)">Overdue</span>
+        <span style="--c: var(--idle)">Upcoming</span>
+      </div>
+    </section>
+
+    <section class="panel day" aria-label="Selected day">
+      <div class="dayhead">
+        <h2 id="dayTitle">-</h2>
+        <div class="daynav">
+          <button type="button" class="btn" id="prevDay" aria-label="Previous day">Previous</button>
+          <button type="button" class="btn" id="todayBtn">Today</button>
+          <button type="button" class="btn" id="nextDay" aria-label="Next day">Next</button>
+        </div>
+      </div>
+      <div class="fine" id="dayMeta"></div>
+      <div id="dayBody"></div>
+    </section>
+  </div>
+  </div>
+</div>
+
+<dialog id="reportDlg" aria-labelledby="repTitle">
+  <form class="dlg" method="dialog" id="reportForm">
+    <h2 id="repTitle">Report: posted links</h2>
+    <div class="row">
+      <label for="repRange">Period
+        <select class="f" id="repRange">
+          <option value="today" selected>Today</option>
+          <option value="day">Selected day</option>
+          <option value="week">Week of the selected day</option>
+          <option value="month">Whole month</option>
+          <option value="custom">Custom dates</option>
+        </select>
+      </label>
+      <label for="repFrom">From <input class="f" type="date" id="repFrom"></label>
+      <label for="repTo">To <input class="f" type="date" id="repTo"></label>
+      <label for="repGroup">Group by
+        <select class="f" id="repGroup">
+          <option value="company">Company</option>
+          <option value="platform">Platform</option>
+          <option value="date">Date</option>
+        </select>
+      </label>
+      <label for="repBrand">Brand
+        <select class="f" id="repBrand">
+          <option value="all">Both brands</option>
+          <option value="3S Business">3S Business</option>
+          <option value="BizCity Group">BizCity Group</option>
+        </select>
+      </label>
+    </div>
+    <textarea class="out" id="repOut" readonly aria-label="Report text"></textarea>
+    <div class="row" style="justify-content: space-between">
+      <span class="fine" id="repMeta"></span>
+      <span class="row">
+        <button type="button" class="btn primary" id="copyRep">Copy report</button>
+        <button type="submit" class="btn">Close</button>
+      </span>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="addDlg" aria-labelledby="addTitle">
+  <form class="dlg" id="addForm">
+    <h2 id="addTitle">Add a post</h2>
+    <div class="row">
+      <label for="aDate">Date <input class="f" type="date" id="aDate" required></label>
+      <label for="aBrand">Brand
+        <select class="f" id="aBrand"><option>3S Business</option><option>BizCity Group</option></select>
+      </label>
+      <label for="aPlat">Platform
+        <select class="f" id="aPlat"></select>
+      </label>
+      <label for="aType">Type <input class="f" id="aType" placeholder="Poster, Reel, Story..."></label>
+    </div>
+    <label for="aTitle" class="fine">What is posted
+      <input class="link" id="aTitle" required placeholder="Short description of the post">
+    </label>
+    <label for="aMsg" class="fine">Message to post (WhatsApp Channel and other text posts; optional)
+      <textarea class="link" id="aMsg" rows="4" placeholder="Full text, as it should be posted"></textarea>
+    </label>
+    <div class="row delrow" id="delRow" hidden>
+      <span class="fine">Delete this post from the board? This cannot be undone.</span>
+      <button type="button" class="btn danger" id="delYes">Yes, delete</button>
+      <button type="button" class="btn" id="delNo">Keep it</button>
+    </div>
+    <div class="row" style="justify-content: flex-end">
+      <span class="fine" id="addErr"></span>
+      <button type="button" class="btn danger-o" id="delBtn" hidden>Delete</button>
+      <button type="button" class="btn" id="addCancel">Cancel</button>
+      <button type="submit" class="btn primary" id="addSave">Add</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="backend.js"></script>
+<script>
+(function () {
+  var PLATFORMS = ["WhatsApp Channel", "Instagram", "Facebook", "LinkedIn", "TikTok", "YouTube Shorts", "Google Business Profile", "Blog", "LinkedIn (blog post)"];
+  var STATUSES = ["Planned", "Ready", "Posted", "Skipped"];
+  var BRANDS = ["3S Business", "BizCity Group"];
+  var MONTH = { y: 2026, m: 10 }; // November (0-based month)
+  var posts = {};      // id -> data
+  var state = { brand: "all", plat: "all", sel: null };
+  var db = null, user = null, canWrite = null, myId = null;
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function iso(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function parse(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function todayIso() { return iso(new Date()); }
+  function fmtLong(s) { return parse(s).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }); }
+  function fmtShort(s) { return parse(s).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }); }
+  function el(tag, attrs, text) {
+    var e = document.createElement(tag);
+    if (attrs) for (var k in attrs) { if (k === "class") e.className = attrs[k]; else e.setAttribute(k, attrs[k]); }
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  var UAE = String.fromCodePoint(0x1F1E6, 0x1F1EA);
+  function dayLabel(ds) { var x = parse(ds); return x.getDate() + " " + x.toLocaleDateString("en-GB", { month: "short" }); }
+  function rich(tag, attrs, text) {
+    var e = el(tag, attrs); var parts = String(text == null ? "" : text).split(UAE);
+    parts.forEach(function (part, i) {
+      if (i) e.appendChild(el("img", { class: "flag", alt: "UAE flag", src: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 6'%3E%3Crect width='12' height='2' fill='%2300732f'/%3E%3Crect y='2' width='12' height='2' fill='%23fff'/%3E%3Crect y='4' width='12' height='2' fill='%23000'/%3E%3Crect width='3' height='6' fill='%23ff0000'/%3E%3C/svg%3E" }));
+      if (part) e.appendChild(document.createTextNode(part));
+    });
+    return e;
+  }
+  var NAME_ALIAS = { "muffin": "Mufeed" };
+  function displayName(n) { n = (n || "").trim(); if (!n) return "Someone"; var first = n.split(/\s+/)[0].toLowerCase(); return NAME_ALIAS[first] || NAME_ALIAS[n.toLowerCase()] || n; }
+  var SLOT = { Morning: 0, Evening: 2 };
+  function cmpPlat(a, b) { return (PLATFORMS.indexOf(a.platform) - PLATFORMS.indexOf(b.platform)) || ((SLOT[a.slot] == null ? 1 : SLOT[a.slot]) - (SLOT[b.slot] == null ? 1 : SLOT[b.slot])); }
+  function safeUrl(u) { return /^https?:\/\//i.test(u || "") ? u : null; }
+  function notice(msg) { var n = document.getElementById("notice"); n.textContent = msg || ""; n.hidden = !msg; }
+
+  var BLOGREF = { "3S Business": { 2: "3s-2026-11-10-blog", 3: "3s-2026-11-12-blog", 5: "3s-2026-11-17-blog", 6: "3s-2026-11-19-blog", 7: "3s-2026-11-19-blog2", 9: "3s-2026-11-24-blog", 11: "3s-2026-11-26-blog", 12: "3s-2026-12-01-blog" },
+                  "BizCity Group": { 1: "bc-2026-11-10-blog", 4: "bc-2026-11-17-blog", 8: "bc-2026-11-24-blog", 10: "bc-2026-11-26-blog" } };
+  var MON = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+  function utm(brand, date) {
+    var d = parse(date);
+    return "utm_source=whatsapp_channel&utm_medium=social&utm_campaign=nov2026_" + (brand === "3S Business" ? "3s" : "bizcity") + "&utm_content=" + MON[d.getMonth()] + pad(d.getDate());
+  }
+  function list() {
+    var arr = Object.keys(posts).map(function (id) { var d = posts[id]; return Object.assign({ id: id }, d); })
+      .filter(function (p) { return p.date && p.brand && p.platform; });
+    arr.forEach(function (p) {
+      if (p.platform !== "WhatsApp Channel") return;
+      if (p.slot) p.type = p.slot + " · " + (p.type || "");
+      if (p.socialRef) {
+        var SOC = ["Instagram", "Facebook", "LinkedIn", "TikTok", "YouTube Shorts"];
+        var links = [];
+        SOC.forEach(function (pl) {
+          Object.keys(posts).forEach(function (id) {
+            var q = posts[id];
+            if (q.brand === p.brand && q.date === p.date && q.platform === pl && safeUrl(q.link)) links.push(pl + ": " + q.link);
+          });
+        });
+        if (p.message) p.message = p.message.replace(/\s+on Instagram\s*$/, ":").replace(/See our post\s*$/, "See our post:");
+        if (links.length) p.postLink = links.join("\n"); else { p.postLink = ""; p.pendingSocial = true; }
+      }
+      if (p.title === "Same as the social post") {
+        var soc = arr.filter(function (q) { return q.brand === p.brand && q.date === p.date && q.platform === "Instagram"; })[0];
+        if (soc) p.title = "Same as social: " + soc.title;
+      }
+      var m = /New (?:BizCity )?blog (\d+)/.exec(p.postLink || "");
+      if (m && !/^https?:/.test(p.postLink || "")) {
+        var ref = (BLOGREF[p.brand] || {})[+m[1]]; var b = ref && posts[ref];
+        p.blogTitle = b ? b.title : "";
+        if (b && safeUrl(b.link)) p.postLink = b.link + (b.link.indexOf("?") < 0 ? "?" : "&") + utm(p.brand, p.date);
+        else p.pendingBlog = true;
+      }
+    });
+    return arr;
+  }
+  function visible(arr) {
+    return arr.filter(function (p) {
+      return (state.brand === "all" || p.brand === state.brand) && (state.plat === "all" || p.platform === state.plat);
+    });
+  }
+  function effStatus(p) {
+    if (p.status === "Posted" || p.status === "Skipped") return p.status;
+    if (p.date < todayIso()) return "Overdue";
+    return p.status || "Planned";
+  }
+  function ratio(arr) {
+    var due = arr.filter(function (p) { return p.status !== "Skipped"; });
+    var done = due.filter(function (p) { return p.status === "Posted"; });
+    return { done: done.length, total: due.length };
+  }
+  function weekRange(s) {
+    var d = parse(s); var day = (d.getDay() + 6) % 7; // Monday start
+    var a = new Date(d); a.setDate(d.getDate() - day);
+    var b = new Date(a); b.setDate(a.getDate() + 6);
+    return [iso(a), iso(b)];
+  }
+
+  /* ---------- summary ---------- */
+  function setTile(id, bar, r) {
+    document.getElementById(id).textContent = r.total ? (r.done + " / " + r.total) : "-";
+    if (bar) document.getElementById(bar).style.width = (r.total ? Math.round(100 * r.done / r.total) : 0) + "%";
+  }
+  function renderSummary() {
+    var all = visible(list()); var t = todayIso(); var wr = weekRange(t);
+    setTile("tToday", "bToday", ratio(all.filter(function (p) { return p.date === t; })));
+    var late = all.filter(function (p) { return effStatus(p) === "Overdue"; }).length;
+    document.getElementById("tLate").textContent = late;
+    document.getElementById("lateTile").classList.toggle("alert", late > 0);
+    document.getElementById("tNoLink").textContent = all.filter(function (p) { return p.status === "Posted" && !safeUrl(p.link); }).length;
+  }
+
+  /* ---------- calendar ---------- */
+  function renderCal() {
+    var g = document.getElementById("calGrid"); g.textContent = "";
+    ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(function (d) { g.appendChild(el("div", { class: "dow" }, d)); });
+    var first = new Date(MONTH.y, MONTH.m, 1); var lead = (first.getDay() + 6) % 7;
+    for (var i = 0; i < lead; i++) g.appendChild(el("div", { class: "cell blank", "aria-hidden": "true" }));
+    var days = new Date(MONTH.y, MONTH.m + 1, 0).getDate(); var all = visible(list()); var t = todayIso();
+    var trail = (7 - (lead + days) % 7) % 7;
+    for (var d = 1; d <= days + trail; d++) {
+      var ds = iso(new Date(MONTH.y, MONTH.m, d));
+      var items = all.filter(function (p) { return p.date === ds; });
+      var r = ratio(items); var cls = "s-none";
+      if (items.length) {
+        if (r.total && r.done === r.total) cls = "s-done";
+        else if (items.some(function (p) { return effStatus(p) === "Overdue"; })) cls = "s-late";
+        else if (r.done > 0) cls = "s-part";
+        else cls = "s-up";
+      }
+      var b = el("button", { type: "button", class: "cell " + cls + (ds === t ? " today" : ""), "aria-selected": String(ds === state.sel), "aria-label": fmtLong(ds) + ", " + r.done + " of " + r.total + " posted" }, d > days ? dayLabel(ds) : String(d));
+      if (d > days) b.classList.add("other");
+      b.appendChild(el("span", { class: "dot", "aria-hidden": "true" }));
+      b.addEventListener("click", (function (x) { return function () { select(x); }; })(ds));
+      g.appendChild(b);
+    }
+  }
+
+  /* ---------- day ---------- */
+  async function renderDay() {
+    var ds = state.sel; document.getElementById("dayTitle").textContent = fmtLong(ds);
+    var items = visible(list()).filter(function (p) { return p.date === ds; });
+    var r = ratio(items);
+    document.getElementById("dayMeta").textContent = items.length ? (r.done + " of " + r.total + " posted" + (canWrite === false ? ". View only." : "")) : "";
+    var body = document.getElementById("dayBody"); body.textContent = "";
+    if (!items.length) { body.appendChild(el("div", { class: "empty" }, Object.keys(posts).length ? "Nothing planned for this day with the current filters." : "Loading posts...")); return; }
+    var ids = items.map(function (p) { return p.updatedBy; }).filter(Boolean);
+    var profs = (user && ids.length) ? await user.profiles(ids) : {};
+    BRANDS.forEach(function (brand) {
+      var rows = items.filter(function (p) { return p.brand === brand; })
+        .sort(function (a, b) { return cmpPlat(a, b); });
+      if (!rows.length) return;
+      var blk = el("div", { class: "brandblock" });
+      var h = el("h3", null, brand); h.style.setProperty("--b", brand === "3S Business" ? "var(--brand3s)" : "var(--brandbc)");
+      blk.appendChild(h);
+      var wrap = el("div", { class: "tblwrap" }); var t = el("table", { class: "tbl" });
+      var thead = el("thead"); var hr = el("tr");
+      ["Platform", "Content", "Status", "Live link", "Updated"].forEach(function (x) { hr.appendChild(el("th", { scope: "col" }, x)); });
+      thead.appendChild(hr); t.appendChild(thead);
+      var tb = el("tbody");
+      rows.forEach(function (p) {
+        var tr = el("tr");
+        var c1 = el("td"); c1.appendChild(el("div", { class: "plat" }, p.platform)); c1.appendChild(el("div", { class: "type" }, p.type || ""));
+        tr.appendChild(c1);
+        var c2 = el("td", { class: "title" }); c2.appendChild(rich("div", null, p.title || ""));
+        if (p.message) c2.appendChild(messageBox(p));
+        tr.appendChild(c2);
+        var c3 = el("td"); c3.appendChild(statusControl(p, "st-")); tr.appendChild(c3);
+        var c4 = el("td"); c4.appendChild(linkControl(p, "ln-")); tr.appendChild(c4);
+        var c5 = el("td", { class: "fine" });
+        if (p.updatedAt) {
+          var who = p.updatedBy && profs[p.updatedBy] ? displayName(profs[p.updatedBy].name) : "Someone";
+          c5.textContent = who + ", " + new Date(p.updatedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+        } else c5.textContent = "-";
+        if (editable()) {
+          var eb = el("button", { type: "button", class: "editbtn", "aria-label": "Edit " + p.brand + " " + p.platform + " post" }, "Edit");
+          eb.addEventListener("click", function () { openEditor(p.id); });
+          c5.appendChild(el("br")); c5.appendChild(eb);
+        }
+        tr.appendChild(c5);
+        tb.appendChild(tr);
+      });
+      t.appendChild(tb); wrap.appendChild(t); blk.appendChild(wrap); body.appendChild(blk);
+    });
+  }
+
+  /* ---------- shared row controls ---------- */
+  function editable() { return canWrite !== false && !!db; }
+  function statusControl(p, prefix) {
+    var box = el("div"); var es = effStatus(p);
+    if (editable()) {
+      var sel = el("select", { class: "status st-" + es, id: prefix + p.id, "aria-label": "Status for " + p.brand + " " + p.platform });
+      STATUSES.forEach(function (s) { var o = el("option", { value: s }, s); if ((p.status || "Planned") === s) o.selected = true; sel.appendChild(o); });
+      sel.addEventListener("change", function () {
+        if (sel.value === "Posted" && !safeUrl((posts[p.id] || {}).link)) {
+          sel.value = (posts[p.id] || {}).status || "Planned";
+          notice("Paste the live link first: a post is marked Posted automatically when its link is added.");
+          var li = document.getElementById(prefix.replace("st-", "ln-") + p.id); if (li) li.focus();
+          return;
+        }
+        save(p.id, { status: sel.value });
+      });
+      box.appendChild(sel);
+      if (es === "Overdue") box.appendChild(el("div", { class: "pill st-Overdue", style: "margin-top:4px" }, "Overdue"));
+    } else box.appendChild(el("span", { class: "pill st-" + es }, es));
+    return box;
+  }
+  function linkControl(p, prefix) {
+    var box = el("div"); var u = safeUrl(p.link);
+    if (editable()) {
+      var inp = el("input", { class: "link", id: prefix + p.id, type: "url", placeholder: "Paste the live post link", "aria-label": "Live link for " + p.brand + " " + p.platform });
+      inp.value = p.link || "";
+      inp.addEventListener("change", function () {
+        var v = inp.value.trim(); if (v === (p.link || "")) return;
+        var patch = { link: v }; if (v && safeUrl(v) && (p.status || "Planned") !== "Posted") patch.status = "Posted";
+        save(p.id, patch);
+      });
+      box.appendChild(inp);
+    }
+    if (u) box.appendChild(el("a", { class: "open", href: u, target: "_blank", rel: "noopener noreferrer" }, "Open post"));
+    else if (!editable()) box.appendChild(el("span", { class: "fine" }, "No link yet"));
+    return box;
+  }
+  var openMsgs = {};
+  function messageBox(p) {
+    var wrap = el("div");
+    var btn = el("button", { type: "button", class: "msgbtn", "aria-expanded": String(!!openMsgs[p.id]) }, openMsgs[p.id] ? "Hide message" : "Show message");
+    var box = el("div", { class: "msg" }); box.hidden = !openMsgs[p.id];
+    box.appendChild(rich("pre", null, p.message));
+    var lk = p.pendingBlog ? "" : (p.postLink || "");
+    if (lk) box.appendChild(el("div", { class: "mlink" }, lk));
+    if (p.pendingSocial) box.appendChild(el("div", { class: "fine" }, "The links to today\u2019s posts appear here automatically as the team pastes them on the Instagram, Facebook, LinkedIn, TikTok and YouTube rows."));
+    if (p.pendingBlog) box.appendChild(el("div", { class: "fine" }, "Link to the blog “" + (p.blogTitle || "new article") + "” appears here automatically once its live link is pasted on the Blog row."));
+    var row = el("div", { class: "row" });
+    var hasLink = !!lk && /https?:\/\//.test(lk);
+    var copy = el("button", { type: "button", class: "btn" }, hasLink ? (lk.indexOf("\n") >= 0 ? "Copy message + links" : "Copy message + link") : "Copy message");
+    copy.addEventListener("click", function () {
+      var text = p.message + (hasLink ? "\n" + lk : "");
+      (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(
+        function () { copy.textContent = "Copied"; setTimeout(function () { copy.textContent = "Copy again"; }, 1500); },
+        function () { copy.textContent = "Select the text and press Ctrl+C"; });
+    });
+    row.appendChild(copy);
+
+    box.appendChild(row);
+    btn.addEventListener("click", function () {
+      openMsgs[p.id] = !openMsgs[p.id]; box.hidden = !openMsgs[p.id];
+      btn.textContent = openMsgs[p.id] ? "Hide message" : "Show message"; btn.setAttribute("aria-expanded", String(!!openMsgs[p.id]));
+    });
+    wrap.appendChild(btn); wrap.appendChild(box);
+    return wrap;
+  }
+
+  /* ---------- needs attention ---------- */
+  function renderAttn() {
+    var all = visible(list()); var t = todayIso();
+    var late = all.filter(function (p) { return effStatus(p) === "Overdue"; }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : cmpPlat(a, b); });
+    var today = all.filter(function (p) { return p.date === t && p.status !== "Posted" && p.status !== "Skipped"; }).sort(function (a, b) { return a.brand < b.brand ? -1 : a.brand > b.brand ? 1 : cmpPlat(a, b); });
+    var body = document.getElementById("attnBody"); body.textContent = "";
+    document.getElementById("attnSub").textContent = Object.keys(posts).length ? (late.length + today.length ? (late.length + " overdue, " + today.length + " still to post today") : "") : "Loading...";
+    if (!Object.keys(posts).length) return;
+    if (!late.length && !today.length) { body.appendChild(el("div", { class: "ok-note" }, "All caught up: nothing overdue and nothing left to post today.")); return; }
+    var groups = el("div", { class: "groups" });
+    [["late", "Overdue", late, "Past days that are not posted or skipped"], ["today", "Still to post today", today, "Today's posts not marked Posted"]].forEach(function (g) {
+      var col = el("div", { class: g[0] });
+      var h = el("h3", null, g[1]); h.appendChild(el("span", { class: "count" }, String(g[2].length))); col.appendChild(h);
+      if (!g[2].length) col.appendChild(el("div", { class: "fine" }, "None"));
+      var shown = g[2].slice(0, 40), lastBrand = null;
+      shown.sort(function (a, b) { return BRANDS.indexOf(a.brand) - BRANDS.indexOf(b.brand) || (a.date < b.date ? -1 : a.date > b.date ? 1 : cmpPlat(a, b)); });
+      shown.forEach(function (p) {
+        if (p.brand !== lastBrand) {
+          lastBrand = p.brand;
+          var n = g[2].filter(function (x) { return x.brand === p.brand; }).length;
+          var bh = el("div", { class: "abrand" }, p.brand + " (" + n + ")");
+          bh.style.setProperty("--b", p.brand === "3S Business" ? "var(--brand3s)" : "var(--brandbc)");
+          col.appendChild(bh);
+        }
+        var it = el("div", { class: "aitem" });
+        var when = el("button", { type: "button", class: "when", title: "Open " + fmtLong(p.date) }, fmtShort(p.date));
+        when.addEventListener("click", function () { select(p.date); document.querySelector(".day").scrollIntoView({ behavior: "smooth", block: "start" }); });
+        it.appendChild(when);
+        var what = el("div", { class: "what" }); what.appendChild(el("b", null, p.platform)); what.appendChild(rich("span", null, " · " + (p.title || "")));
+        it.appendChild(what);
+        var ctl = el("div", { class: "ctl" }); ctl.appendChild(statusControl(p, "ast-")); ctl.appendChild(linkControl(p, "aln-"));
+        it.appendChild(ctl);
+        if (p.message) { var mb = messageBox(p); mb.className = "msgwrap"; it.appendChild(mb); }
+        col.appendChild(it);
+      });
+      if (g[2].length > 40) col.appendChild(el("div", { class: "fine" }, (g[2].length - 40) + " more: use the calendar to see them by day."));
+      groups.appendChild(col);
+    });
+    body.appendChild(groups);
+  }
+
+  /* ---------- content calendar tab ---------- */
+  var STCOL = { Posted: "var(--ok)", Ready: "var(--info)", Planned: "var(--idle)", Overdue: "var(--bad)", Skipped: "var(--line)" };
+  function renderContentCal() {
+    var chan = document.getElementById("chanSel").value;
+    var all = list().filter(function (p) { return (state.brand === "all" || p.brand === state.brand) && (chan === "all" || p.platform === chan); });
+    var g = document.getElementById("ccalGrid"); g.textContent = "";
+    ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(function (d) { g.appendChild(el("div", { class: "ccal-dow" }, d)); });
+    var first = new Date(MONTH.y, MONTH.m, 1); var lead = (first.getDay() + 6) % 7;
+    for (var i = 0; i < lead; i++) g.appendChild(el("div", { class: "ccal-day blank", "aria-hidden": "true" }));
+    var days = new Date(MONTH.y, MONTH.m + 1, 0).getDate(); var t = todayIso(); var count = 0, done = 0;
+    var trail = (7 - (lead + days) % 7) % 7;
+    for (var d = 1; d <= days + trail; d++) {
+      var ds = iso(new Date(MONTH.y, MONTH.m, d));
+      var cell = el("div", { class: "ccal-day" + (ds === t ? " today" : "") + (d > days ? " other" : "") });
+      var dn = el("div", { class: "dn" });
+      var open = el("button", { type: "button", title: "Open " + fmtLong(ds) + " on the posting board" }, d > days ? dayLabel(ds) : String(d));
+      open.addEventListener("click", (function (x) { return function () { goBoard(x); }; })(ds));
+      dn.appendChild(open);
+      var items = all.filter(function (p) { return p.date === ds; })
+        .sort(function (a, b) { return BRANDS.indexOf(a.brand) - BRANDS.indexOf(b.brand) || cmpPlat(a, b); });
+      if (items.length) dn.appendChild(el("span", null, items.filter(function (p) { return p.status === "Posted"; }).length + "/" + items.length));
+      cell.appendChild(dn);
+      items.forEach(function (p) {
+        count++; if (p.status === "Posted") done++;
+        var es = effStatus(p);
+        var b = el("button", { type: "button", class: "citem", title: p.brand + " | " + p.platform + " | " + es + "\n" + (p.message || p.title || "") });
+        b.style.setProperty("--st", STCOL[es] || "var(--idle)");
+        b.style.setProperty("--b", p.brand === "3S Business" ? "var(--brand3s)" : "var(--brandbc)");
+        b.appendChild(el("span", { class: "cb" }, p.brand === "3S Business" ? "3S Business" : "BizCity"));
+        b.appendChild(el("span", { class: "ct" }, (chan === "all" ? p.platform + " · " : "") + (p.type || "") + " · " + es));
+        b.appendChild(rich("span", { class: "tt" }, p.title || ""));
+        b.addEventListener("click", function () { if (p.message) openMsgs[p.id] = true; goBoard(p.date); });
+        cell.appendChild(b);
+      });
+      g.appendChild(cell);
+    }
+    renderContentTable(all, chan);
+    document.getElementById("ccalMeta").textContent = Object.keys(posts).length
+      ? (chan === "all" ? "All channels" : chan) + ": " + count + " posts this month, " + done + " posted. Click a post to open it on the posting board."
+      : "Loading posts...";
+  }
+  var dlReady = false;
+  var calLayout = "calendar";
+  try { calLayout = localStorage.getItem("pbLayout") === "table" ? "table" : "calendar"; } catch (e) {}
+  function setLayout(l) {
+    calLayout = l;
+    try { localStorage.setItem("pbLayout", l); } catch (e) {}
+    document.getElementById("ccalCalWrap").hidden = l !== "calendar";
+    document.getElementById("ccalTblWrap").hidden = l !== "table";
+    document.getElementById("layCal").setAttribute("aria-pressed", String(l === "calendar"));
+    document.getElementById("layTbl").setAttribute("aria-pressed", String(l === "table"));
+    document.getElementById("dlCsv").hidden = !dlReady;
+    document.getElementById("dlPdf").hidden = !dlReady;
+  }
+  var lastTableRows = [], lastTableChan = "all";
+  function csvCell(v) { v = String(v == null ? "" : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+  async function downloadTable() {
+    var dl = null; try { dl = await window.claude.use("downloads"); } catch (e) {}
+    if (!dl) { notice("Downloads are not available in this view."); return; }
+    var head = ["Date", "Day", "Company", "Channel", "Slot", "Type", "Content", "Status", "Live link", "Link to share"];
+    var lines = [head.join(",")];
+    lastTableRows.forEach(function (p) {
+      var d = parse(p.date);
+      lines.push([p.date, d.toLocaleDateString("en-GB", { weekday: "short" }), p.brand, p.platform, p.slot || "", String(p.type || "").replace(/^(Morning|Evening) \u00b7 /, ""),
+        p.message || p.title || "", effStatus(p), p.link || "", p.pendingBlog || p.pendingSocial ? "" : (p.postLink || "")].map(csvCell).join(","));
+    });
+    var brandPart = state.brand === "all" ? "3S and BizCity" : state.brand;
+    var chanPart = lastTableChan === "all" ? "All channels" : lastTableChan;
+    try { await dl.save({ filename: "Content calendar - " + brandPart + " - " + chanPart + " - November 2026.csv", data: "\ufeff" + lines.join("\r\n") }); notice(""); }
+    catch (e) { if (!e || e.code !== "declined") notice("The download did not start. Try again in a moment."); }
+  }
+  function loadScript(src) {
+    return new Promise(function (res, rej) {
+      if (document.querySelector('script[src="' + src + '"]')) return res();
+      var sc = document.createElement("script"); sc.src = src; sc.onload = function () { res(); }; sc.onerror = function () { rej(new Error("load " + src)); };
+      document.head.appendChild(sc);
+    });
+  }
+  function pdfText(t) {
+    return String(t || "").replace(/[\u{1F1E6}-\u{1F1FF}]/gu, "").replace(/\p{Extended_Pictographic}/gu, "").replace(/[\uFE0F\u200D]/g, "")
+      .replace(/\s+on Instagram\s*$/, "").replace(/\s{2,}/g, " ").trim();
+  }
+  async function downloadPdf() {
+    var btn = document.getElementById("dlPdf"), label = btn.textContent;
+    var dl = null; try { dl = await window.claude.use("downloads"); } catch (e) {}
+    if (!dl) { notice("Downloads are not available in this view."); return; }
+    btn.disabled = true; btn.textContent = "Preparing PDF...";
+    try {
+      await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+      await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js");
+      var J = window.jspdf && window.jspdf.jsPDF; if (!J) throw new Error("no jsPDF");
+      var doc = new J({ unit: "mm", format: "a4" });
+      var chan = lastTableChan, rows = lastTableRows.slice();
+      var title = (chan === "all" ? "Content" : chan) + " contents, November 2026";
+      var brands = BRANDS.filter(function (b) { return state.brand === "all" || state.brand === b; });
+      var first = true;
+      brands.forEach(function (b) {
+        var br = rows.filter(function (p) { return p.brand === b; });
+        if (!br.length) return;
+        if (!first) doc.addPage();
+        first = false;
+        doc.setFont("helvetica", "bold"); doc.setFontSize(15); doc.setTextColor(24, 34, 45);
+        doc.text(title, 14, 16);
+        doc.setFontSize(12); doc.setTextColor(b === "3S Business" ? 45 : 154, b === "3S Business" ? 82 : 116, b === "3S Business" ? 117 : 64);
+        doc.text(b, 14, 24);
+        var perDay = {}; br.forEach(function (p) { perDay[p.date] = (perDay[p.date] || 0) + 1; });
+        var body = br.map(function (p) {
+          var d = parse(p.date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+          if (p.slot && perDay[p.date] > 1) d += "\n" + p.slot;
+          if (chan === "all") d += "\n" + p.platform;
+          return [d, pdfText(p.message || p.title)];
+        });
+        doc.autoTable({
+          startY: 28, head: [["Date", "Content"]], body: body, theme: "grid",
+          styles: { font: "helvetica", fontSize: 9.5, cellPadding: 2.2, valign: "top", textColor: [24, 34, 45], lineColor: [221, 227, 233], lineWidth: 0.2 },
+          headStyles: { fillColor: [238, 241, 244], textColor: [93, 107, 121], fontStyle: "bold" },
+          columnStyles: { 0: { cellWidth: 30, fontStyle: "bold" }, 1: { cellWidth: "auto" } },
+          margin: { left: 14, right: 14 }
+        });
+      });
+      if (first) { notice("Nothing to put in the PDF for this channel and brand."); return; }
+      var brandPart = state.brand === "all" ? "3S and BizCity" : state.brand;
+      var chanPart = chan === "all" ? "All channels" : chan;
+      await dl.save({ filename: chanPart + " contents - " + brandPart + " - November 2026.pdf", data: doc.output("blob") });
+      notice("");
+    } catch (e) {
+      if (!e || e.code !== "declined") notice("The PDF could not be made. Check your connection and try again.");
+    } finally { btn.disabled = false; btn.textContent = label; }
+  }
+  function renderContentTable(all, chan) {
+    var t = document.getElementById("ccalTbl"); t.textContent = "";
+    var thead = el("thead"); var hr = el("tr");
+    ["Date", "Company", "Channel", "Type", "Content", "Status", "Live link"].forEach(function (x) { hr.appendChild(el("th", { scope: "col" }, x)); });
+    thead.appendChild(hr); t.appendChild(thead);
+    var tb = el("tbody");
+    var rows = all.filter(function (p) { return p.date >= iso(new Date(MONTH.y, MONTH.m, 1)) && p.date <= iso(new Date(MONTH.y, MONTH.m + 1, 1)); })
+      .sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : BRANDS.indexOf(a.brand) - BRANDS.indexOf(b.brand) || cmpPlat(a, b); });
+    lastTableRows = rows; lastTableChan = chan;
+    if (!rows.length) { var er = el("tr"); var ec = el("td", { colspan: "7", class: "empty" }, Object.keys(posts).length ? "No posts for this channel and brand." : "Loading posts..."); er.appendChild(ec); tb.appendChild(er); }
+    var lastDate = null;
+    rows.forEach(function (p) {
+      if (p.date !== lastDate) {
+        lastDate = p.date;
+        var dr = el("tr", { class: "dayrow" }); dr.appendChild(el("td", { colspan: "7" }, fmtLong(p.date))); tb.appendChild(dr);
+      }
+      var es = effStatus(p);
+      var tr = el("tr", { class: "prow", tabindex: "0", title: "Open on the posting board" });
+      tr.appendChild(el("td", { class: "fine" }, fmtShort(p.date)));
+      var co = el("td", { class: "co" }, p.brand); co.style.setProperty("--b", p.brand === "3S Business" ? "var(--brand3s)" : "var(--brandbc)"); tr.appendChild(co);
+      tr.appendChild(el("td", { class: "plat" }, p.platform));
+      tr.appendChild(el("td", { class: "type" }, p.type || ""));
+      tr.appendChild(rich("td", { class: "title" }, p.message || p.title || ""));
+      var st = el("td"); st.appendChild(el("span", { class: "pill st-" + es }, es)); tr.appendChild(st);
+      var ln = el("td", { class: "ln" }); var u = safeUrl(p.link);
+      if (u) { var a = el("a", { href: u, target: "_blank", rel: "noopener noreferrer" }, "Open post"); a.addEventListener("click", function (e) { e.stopPropagation(); }); ln.appendChild(a); }
+      else ln.appendChild(el("span", { class: "fine" }, "-"));
+      tr.appendChild(ln);
+      var go = function () { if (p.message) openMsgs[p.id] = true; goBoard(p.date); };
+      tr.addEventListener("click", go);
+      tr.addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+  }
+  function showTab(name) {
+    var cal = name === "calendar";
+    document.getElementById("viewCal").hidden = !cal;
+    document.getElementById("viewBoard").hidden = cal;
+    document.getElementById("tabCal").setAttribute("aria-selected", String(cal));
+    document.getElementById("tabBoard").setAttribute("aria-selected", String(!cal));
+    document.getElementById("platFilter").style.visibility = cal ? "hidden" : "";
+    document.getElementById("hideBar").hidden = cal;
+    try { if (location.hash !== "#" + (cal ? "calendar" : "board")) history.replaceState(null, "", "#" + (cal ? "calendar" : "board")); } catch (e) {}
+    if (cal) renderContentCal();
+  }
+  function goBoard(ds) {
+    showTab("board"); select(ds);
+    var d = document.querySelector(".day"); if (d) d.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function renderAll() { renderSummary(); renderAttn(); renderCal(); renderDay(); if (!document.getElementById("viewCal").hidden) renderContentCal(); }
+  function select(ds) { state.sel = ds; renderCal(); renderDay(); }
+
+  /* ---------- writes ---------- */
+  var saving = {};
+  async function save(id, patch) {
+    if (!db || saving[id]) return;
+    saving[id] = true;
+    patch.updatedAt = new Date().toISOString();
+    if (myId) patch.updatedBy = myId;
+    try { await db.doc("posts/" + id).update(patch); notice(""); }
+    catch (e) {
+      if (e && e.code === "invalid_argument") { canWrite = false; notice("You can view this board but not change it. Editing is for the board editor."); renderDay(); }
+      else if (e && e.code === "quota_exceeded") notice("The board's storage is full. Remove old posts before adding more.");
+      else notice("That change did not save. Check your connection and try again.");
+    } finally { saving[id] = false; }
+  }
+
+  /* ---------- report ---------- */
+  function repRange() {
+    var v = document.getElementById("repRange").value, from, to;
+    if (v === "today") { from = to = todayIso(); }
+    else if (v === "day") { from = to = state.sel; }
+    else if (v === "week") { var w = weekRange(state.sel); from = w[0]; to = w[1]; }
+    else if (v === "month") { from = iso(new Date(MONTH.y, MONTH.m, 1)); to = iso(new Date(MONTH.y, MONTH.m + 1, 1)); }
+    else { from = document.getElementById("repFrom").value; to = document.getElementById("repTo").value; }
+    document.getElementById("repFrom").value = from || ""; document.getElementById("repTo").value = to || "";
+    return [from, to];
+  }
+  function buildReport() {
+    var rg = repRange(), brand = document.getElementById("repBrand").value, group = document.getElementById("repGroup").value;
+    var items = list().filter(function (p) { return p.date >= rg[0] && p.date <= rg[1] && (brand === "all" || p.brand === brand) && (state.plat === "all" || p.platform === state.plat); });
+    var posted = items.filter(function (p) { return p.status === "Posted" && safeUrl(p.link); });
+    var missing = items.filter(function (p) { return p.status === "Posted" && !safeUrl(p.link); });
+    var notDone = items.filter(function (p) { return p.status !== "Posted" && p.status !== "Skipped"; });
+    var lines = [];
+    var oneDay = rg[0] === rg[1];
+    lines.push(oneDay ? (rg[0] === todayIso() ? "Today's posts: " : "Posts: ") + fmtLong(rg[0]) : "Posts: " + fmtShort(rg[0]) + " to " + fmtShort(rg[1]));
+    lines.push("");
+    if (group === "company") {
+      var topicOf = function (p) { return String(p.title || "").replace(/^Same as social:\s*/, "").trim(); };
+      BRANDS.forEach(function (b) {
+        var bp = posted.filter(function (p) { return p.brand === b; });
+        if (!bp.length) return;
+        lines.push(b.toUpperCase());
+        var dates = []; bp.forEach(function (p) { if (dates.indexOf(p.date) < 0) dates.push(p.date); }); dates.sort();
+        dates.forEach(function (d) {
+          if (!oneDay) lines.push(fmtLong(d));
+          var dp = bp.filter(function (p) { return p.date === d; });
+          var topics = [];
+          dp.forEach(function (p) { var tk = topicOf(p); if (!topics.some(function (x) { return x.t === tk; })) topics.push({ t: tk, first: PLATFORMS.indexOf(p.platform) }); else topics.forEach(function (x) { if (x.t === tk) x.first = Math.min(x.first, PLATFORMS.indexOf(p.platform)); }); });
+          // social posts first, then the channel, then blogs
+          var rank = function (i) { return PLATFORMS[i] === "WhatsApp Channel" ? 50 : (PLATFORMS[i] || "").indexOf("Blog") >= 0 || PLATFORMS[i] === "LinkedIn (blog post)" ? 60 : i; };
+          topics.sort(function (a, b) { return rank(a.first) - rank(b.first); });
+          topics.forEach(function (tp) {
+            lines.push("  " + tp.t);
+            dp.filter(function (p) { return topicOf(p) === tp.t; })
+              .sort(function (a, b) { return cmpPlat(a, b); })
+              .forEach(function (p) { lines.push("    " + p.platform + ": " + p.link); });
+          });
+          lines.push("");
+        });
+      });
+    } else {
+    var keyOf = group === "platform" ? function (p) { return p.platform; } : function (p) { return p.date; };
+    var keys = [];
+    posted.forEach(function (p) { var k = keyOf(p); if (keys.indexOf(k) < 0) keys.push(k); });
+    keys.sort(function (a, b) { return group === "platform" ? PLATFORMS.indexOf(a) - PLATFORMS.indexOf(b) : group === "company" ? BRANDS.indexOf(a) - BRANDS.indexOf(b) : (a < b ? -1 : 1); });
+    keys.forEach(function (k) {
+      var rows = posted.filter(function (p) { return keyOf(p) === k; }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : (group === "company" ? cmpPlat(a, b) : (a.brand < b.brand ? -1 : 1)); });
+      lines.push((group === "date" ? fmtLong(k) : k).toUpperCase() + " (" + rows.length + ")");
+      rows.forEach(function (p) {
+        var lead = group === "platform" ? fmtShort(p.date) + " | " + p.brand : group === "company" ? fmtShort(p.date) + " | " + p.platform : p.platform + " | " + p.brand;
+        lines.push("- " + lead + " | " + (p.title || "") + "\n  " + p.link);
+      });
+      lines.push("");
+    });
+    }
+    if (!posted.length) lines.push("No posted links in this period yet.");
+    document.getElementById("repOut").value = lines.join("\n");
+    document.getElementById("repMeta").textContent = posted.length + " links" + (missing.length ? "; " + missing.length + " marked Posted without a link (not in the report)" : "");
+  }
+
+  /* ---------- wiring ---------- */
+  document.querySelectorAll(".seg button[data-brand]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      state.brand = b.getAttribute("data-brand");
+      document.querySelectorAll(".seg button[data-brand]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      renderAll();
+    });
+  });
+  var pf = document.getElementById("platFilter"), ap = document.getElementById("aPlat");
+  PLATFORMS.forEach(function (p) { pf.appendChild(el("option", { value: p }, p)); ap.appendChild(el("option", { value: p }, p)); });
+  pf.addEventListener("change", function () { state.plat = pf.value; renderAll(); });
+  function shift(n) { var d = parse(state.sel); d.setDate(d.getDate() + n); var s = iso(d); if (s >= iso(new Date(MONTH.y, MONTH.m, 1)) && s <= iso(new Date(MONTH.y, MONTH.m + 1, 6))) select(s); }
+  document.getElementById("prevDay").addEventListener("click", function () { shift(-1); });
+  document.getElementById("nextDay").addEventListener("click", function () { shift(1); });
+  document.getElementById("todayBtn").addEventListener("click", function () { var t = todayIso(); if (parse(t).getMonth() === MONTH.m && parse(t).getFullYear() === MONTH.y) select(t); });
+
+  var rd = document.getElementById("reportDlg");
+  document.getElementById("reportBtn").addEventListener("click", function () { buildReport(); if (rd.showModal) rd.showModal(); else rd.setAttribute("open", ""); });
+  ["repRange", "repGroup", "repBrand"].forEach(function (id) { document.getElementById(id).addEventListener("change", buildReport); });
+  ["repFrom", "repTo"].forEach(function (id) { document.getElementById(id).addEventListener("change", function () { document.getElementById("repRange").value = "custom"; buildReport(); }); });
+  document.getElementById("copyRep").addEventListener("click", function () {
+    var t = document.getElementById("repOut"); var btn = this;
+    (navigator.clipboard ? navigator.clipboard.writeText(t.value) : Promise.reject()).then(function () { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = "Copy report"; }, 1500); },
+      function () { t.focus(); t.select(); btn.textContent = "Press Ctrl+C to copy"; });
+  });
+
+  var ad = document.getElementById("addDlg"), editId = null;
+  function openDlg() { if (ad.showModal) ad.showModal(); else ad.setAttribute("open", ""); }
+  function resetDlg(mode) {
+    document.getElementById("addTitle").textContent = mode === "edit" ? "Edit post" : "Add a post";
+    document.getElementById("addSave").textContent = mode === "edit" ? "Save changes" : "Add";
+    document.getElementById("delBtn").hidden = mode !== "edit";
+    document.getElementById("delRow").hidden = true;
+    document.getElementById("addErr").textContent = "";
+  }
+  document.getElementById("addBtn").addEventListener("click", function () {
+    if (!db || canWrite === false) { notice("Sign in as the board editor to add posts."); return; }
+    editId = null; resetDlg("add");
+    document.getElementById("aDate").value = state.sel;
+    ["aTitle", "aType", "aMsg"].forEach(function (id) { document.getElementById(id).value = ""; });
+    openDlg();
+  });
+  function openEditor(id) {
+    var d = posts[id]; if (!d) return;
+    editId = id; resetDlg("edit");
+    document.getElementById("aDate").value = d.date || "";
+    document.getElementById("aBrand").value = d.brand || "3S Business";
+    document.getElementById("aPlat").value = d.platform || "Instagram";
+    document.getElementById("aType").value = d.type || "";
+    document.getElementById("aTitle").value = d.title || "";
+    document.getElementById("aMsg").value = d.message || "";
+    openDlg();
+  }
+  document.getElementById("delBtn").addEventListener("click", function () { document.getElementById("delRow").hidden = false; });
+  document.getElementById("delNo").addEventListener("click", function () { document.getElementById("delRow").hidden = true; });
+  document.getElementById("delYes").addEventListener("click", async function () {
+    if (!editId) return;
+    try { await db.doc("posts/" + editId).delete(); ad.close(); editId = null; }
+    catch (e) { document.getElementById("addErr").textContent = e && e.code === "invalid_argument" ? "You do not have permission to delete posts." : "Could not delete the post. Try again."; }
+  });
+  document.getElementById("addCancel").addEventListener("click", function () { ad.close(); });
+  document.getElementById("addForm").addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    var d = document.getElementById("aDate").value, br = document.getElementById("aBrand").value, pl = document.getElementById("aPlat").value;
+    var ti = document.getElementById("aTitle").value.trim(), ty = document.getElementById("aType").value.trim(), ms = document.getElementById("aMsg").value.trim();
+    if (!d || !ti) { document.getElementById("addErr").textContent = "Add a date and a description."; return; }
+    if (editId) {
+      var patch = { date: d, brand: br, platform: pl, type: ty || "Extra", title: ti, message: ms, updatedAt: new Date().toISOString() };
+      if (myId) patch.updatedBy = myId;
+      try { await db.doc("posts/" + editId).update(patch); ad.close(); editId = null; select(d); }
+      catch (e) { document.getElementById("addErr").textContent = e && e.code === "invalid_argument" ? "You do not have permission to edit posts." : "Could not save the changes. Try again."; }
+      return;
+    }
+    var data = { date: d, brand: br, platform: pl, type: ty || "Extra", title: ti, status: "Planned", link: "", updatedAt: new Date().toISOString() };
+    if (ms) data.message = ms;
+    if (myId) data.updatedBy = myId;
+    try { await db.collection("posts").add(data); ad.close(); document.getElementById("aTitle").value = ""; select(d); }
+    catch (e) { document.getElementById("addErr").textContent = e && e.code === "invalid_argument" ? "You do not have permission to add posts." : "Could not add the post. Try again."; }
+  });
+
+  var cs = document.getElementById("chanSel");
+  cs.appendChild(el("option", { value: "all" }, "All channels"));
+  PLATFORMS.forEach(function (p) { var o = el("option", { value: p }, p); if (p === "WhatsApp Channel") o.selected = true; cs.appendChild(o); });
+  cs.addEventListener("change", renderContentCal);
+  document.getElementById("layCal").addEventListener("click", function () { setLayout("calendar"); });
+  document.getElementById("layTbl").addEventListener("click", function () { setLayout("table"); });
+  document.getElementById("dlCsv").addEventListener("click", downloadTable);
+  document.getElementById("dlPdf").addEventListener("click", downloadPdf);
+  setLayout(calLayout);
+  document.getElementById("tabBoard").addEventListener("click", function () { showTab("board"); });
+  document.getElementById("tabCal").addEventListener("click", function () { showTab("calendar"); });
+  window.addEventListener("hashchange", function () { showTab(location.hash === "#calendar" ? "calendar" : "board"); });
+
+  [["hideSummary", "summaryBox", "summary"], ["hideAttn", "attnBox", "needs attention"]].forEach(function (h) {
+    var btn = document.getElementById(h[0]), box = document.getElementById(h[1]), key = "pbHide_" + h[1];
+    function apply(hidden) { box.hidden = hidden; btn.setAttribute("aria-expanded", String(!hidden)); btn.textContent = (hidden ? "Show " : "Hide ") + h[2]; }
+    var start = false; try { start = localStorage.getItem(key) === "1"; } catch (e) {}
+    apply(start);
+    btn.addEventListener("click", function () { var hid = !box.hidden; apply(hid); try { localStorage.setItem(key, hid ? "1" : "0"); } catch (e) {} });
+  });
+
+  /* ---------- start ---------- */
+  var t0 = todayIso();
+  state.sel = (parse(t0).getMonth() === MONTH.m && parse(t0).getFullYear() === MONTH.y) ? t0 : iso(new Date(MONTH.y, MONTH.m, 1));
+  renderAll();
+  showTab(location.hash === "#calendar" ? "calendar" : "board");
+
+  (async function () {
+    try { db = await window.claude.use("db"); } catch (e) { db = null; }
+    try { user = await window.claude.use("user"); } catch (e) { user = null; }
+    if (user) { try { canWrite = await user.can("data.write"); myId = await user.id(); } catch (e) {} }
+    try { dlReady = !!(await window.claude.use("downloads")); } catch (e) { dlReady = false; }
+    setLayout(calLayout);
+    document.getElementById("addBtn").hidden = canWrite !== true;
+    if (!db) { notice("The board could not load. Check your connection and reload the page."); return; }
+    var timer = setTimeout(function () { notice("The board cannot be reached right now. What you see may be out of date."); }, 10000);
+    db.collection("posts").onSnapshot(function (snap) {
+      if (!snap.metadata.fromCache) { clearTimeout(timer); notice(""); }
+      var next = {}; snap.docs.forEach(function (d) { if (d.exists) next[d.id] = d.data(); });
+      posts = next;
+      if (!snap.size && !snap.metadata.fromCache) { document.getElementById("dayBody").textContent = "No posts on the board yet."; }
+      renderAll();
+    }, function (e) { clearTimeout(timer); notice(e && e.code === "revoked" ? "This board is no longer available to you." : "The board stopped updating. Reload the page to reconnect."); });
+  })();
+})();
+</script>
+</body>
+</html>
