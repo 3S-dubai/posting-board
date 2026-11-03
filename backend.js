@@ -129,13 +129,25 @@
 
   /* ---------- editor sign-in (management never needs it) ---------- */
   function buildAuthUi() {
-    var controls = document.querySelector("header.top .controls");
-    if (!controls) return;
+    var header = document.querySelector("header.top");
+    if (!header) return;
+    var css = document.createElement("style");
+    css.textContent =
+      "header.top { position: relative; padding-right: 48px; }" +
+      "#authBtn { position: absolute; top: 0; right: 0; width: 36px; height: 36px; padding: 0; display: grid; place-items: center;" +
+      " border: 1px solid var(--line); border-radius: 50%; background: var(--panel); color: var(--muted); cursor: pointer; }" +
+      "#authBtn:hover, #authBtn:focus-visible { color: var(--accent); border-color: var(--accent); }" +
+      "#authBtn.on { color: var(--ok); border-color: var(--ok); }" +
+      "#authBtn svg { width: 18px; height: 18px; }";
+    document.head.appendChild(css);
     var btn = document.createElement("button");
-    btn.type = "button"; btn.className = "btn"; btn.id = "authBtn";
-    btn.textContent = sessionUser ? "Sign out" : "Editor sign in";
-    if (sessionUser) btn.title = "Signed in as " + sessionUser.email;
-    controls.appendChild(btn);
+    btn.type = "button"; btn.id = "authBtn";
+    if (sessionUser) btn.className = "on";
+    var label = sessionUser ? "Sign out (" + sessionUser.email + ")" : "Editor sign in";
+    btn.title = label; btn.setAttribute("aria-label", label);
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">' +
+      '<path d="M12 3v9"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg>';
+    header.appendChild(btn);
 
     var dlg = document.createElement("dialog");
     dlg.id = "authDlg"; dlg.setAttribute("aria-labelledby", "authTitle");
