@@ -188,7 +188,8 @@ textarea.link { resize: vertical; font: inherit; min-height: 80px; }
 .msgbtn { margin-top: 6px; border: 1px solid var(--line); background: var(--panel); border-radius: 6px; padding: 3px 9px; font-size: 12px; cursor: pointer; color: var(--accent); }
 .msg { margin-top: 8px; padding: 10px 12px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); display: grid; gap: 8px; }
 .msg[hidden] { display: none; }
-.msg pre { margin: 0; white-space: pre-wrap; word-break: break-word; font: 13px/1.5 var(--font-body); }
+.msg pre { margin: 0; white-space: pre-wrap; word-break: break-word; font: 13.5px/1.65 var(--font-body); }
+.msgtext { white-space: pre-line; line-height: 1.6; }
 .msg .mlink { font: 12px/1.5 var(--font-num); color: var(--muted); word-break: break-all; white-space: pre-line; }
 .msg .row { gap: 6px; }
 
@@ -458,6 +459,15 @@ html, body { overflow-x: hidden; }
     var d = parse(date);
     return "utm_source=whatsapp_channel&utm_medium=social&utm_campaign=nov2026_" + (brand === "3S Business" ? "3s" : "bizcity") + "&utm_content=" + MON[d.getMonth()] + pad(d.getDate());
   }
+  // WhatsApp messages are stored on one line; lay them out the way they should read in the channel
+  function fmtMsg(t) {
+    return String(t || "")
+      .replace(/^((?:\p{Extended_Pictographic}️?\s*)?(?:Ask 3S|Workspace Tip|Year-End Checklist \d+|Today's post)):\s*(\p{Ll}?)/u, function (m, head, c) { return head + ":\n" + c.toUpperCase(); })
+      .replace(/^([^\n]*\n)?("[^"\n]+\?")\s+/, function (m, head, q) { return (head || "") + q + "\n"; })
+      .replace(/\s+(?=[1-9]\) )/g, "\n")
+      .replace(/\s+(?=(?:\u{1F4D6}|\u{1F449}|\u{1F4CD})\s)/gu, "\n\n")
+      .trim();
+  }
   function list() {
     var arr = Object.keys(posts).map(function (id) { var d = posts[id]; return Object.assign({ id: id }, d); })
       .filter(function (p) { return p.date && p.brand && p.platform; });
@@ -487,6 +497,7 @@ html, body { overflow-x: hidden; }
         if (b && safeUrl(b.link)) p.postLink = b.link + (b.link.indexOf("?") < 0 ? "?" : "&") + utm(p.brand, p.date);
         else p.pendingBlog = true;
       }
+      if (p.message) p.message = fmtMsg(p.message);
     });
     return arr;
   }
@@ -650,7 +661,7 @@ html, body { overflow-x: hidden; }
     var hasLink = !!lk && /https?:\/\//.test(lk);
     var copy = el("button", { type: "button", class: "btn" }, hasLink ? (lk.indexOf("\n") >= 0 ? "Copy message + links" : "Copy message + link") : "Copy message");
     copy.addEventListener("click", function () {
-      var text = p.message + (hasLink ? "\n" + lk : "");
+      var text = p.message + (hasLink ? "\n\n" + lk : "");
       (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(
         function () { copy.textContent = "Copied"; setTimeout(function () { copy.textContent = "Copy again"; }, 1500); },
         function () { copy.textContent = "Select the text and press Ctrl+C"; });
@@ -787,7 +798,7 @@ html, body { overflow-x: hidden; }
   }
   function pdfText(t) {
     return String(t || "").replace(/[\u{1F1E6}-\u{1F1FF}]/gu, "").replace(/\p{Extended_Pictographic}/gu, "").replace(/[\uFE0F\u200D]/g, "")
-      .replace(/\s+on Instagram\s*$/, "").replace(/\s{2,}/g, " ").trim();
+      .replace(/\s+on Instagram\s*$/, "").replace(/[ \t]{2,}/g, " ").replace(/ *\n */g, "\n").trim();
   }
   async function downloadPdf() {
     var btn = document.getElementById("dlPdf"), label = btn.textContent;
@@ -858,7 +869,7 @@ html, body { overflow-x: hidden; }
       var co = el("td", { class: "co" }, p.brand); co.style.setProperty("--b", p.brand === "3S Business" ? "var(--brand3s)" : "var(--brandbc)"); tr.appendChild(co);
       tr.appendChild(el("td", { class: "plat" }, p.platform));
       tr.appendChild(el("td", { class: "type" }, p.type || ""));
-      tr.appendChild(rich("td", { class: "title" }, p.message || p.title || ""));
+      tr.appendChild(rich("td", { class: "title msgtext" }, p.message || p.title || ""));
       var st = el("td"); st.appendChild(el("span", { class: "pill st-" + es }, es)); tr.appendChild(st);
       var ln = el("td", { class: "ln" }); var u = safeUrl(p.link);
       if (u) { var a = el("a", { href: u, target: "_blank", rel: "noopener noreferrer" }, "Open post"); a.addEventListener("click", function (e) { e.stopPropagation(); }); ln.appendChild(a); }
