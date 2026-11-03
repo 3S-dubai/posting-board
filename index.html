@@ -144,6 +144,8 @@ textarea.out { width: 100%; min-height: 300px; border: 1px solid var(--line); bo
 .tabs .hidebtn { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; margin: 0; font-size: 12px; font-weight: 500; color: var(--muted); background: var(--panel); }
 .tabs .hidebtn:hover { border-color: var(--accent); color: var(--accent); }
 .tabs .hidebtn[aria-expanded="false"] { color: var(--panel); background: var(--accent); border-color: var(--accent); }
+.hidebtn .chev { display: inline-block; width: 6px; height: 6px; margin-left: 7px; border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor; transform: translateY(-1px) rotate(225deg); transition: transform .15s; }
+.hidebtn[aria-expanded="false"] .chev { transform: translateY(-3px) rotate(45deg); }
 .hidebar[hidden] { display: none; }
 .hidebtn { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 3px 12px; font-size: 12px; cursor: pointer; color: var(--muted); }
 .hidebtn[aria-expanded="false"] { color: var(--accent); border-color: var(--accent); }
@@ -265,8 +267,8 @@ html, body { overflow-x: hidden; }
     <button type="button" role="tab" id="tabBoard" aria-controls="viewBoard" aria-selected="true">Posting board</button>
     <button type="button" role="tab" id="tabCal" aria-controls="viewCal" aria-selected="false">Content calendar</button>
     <div class="hidebar" id="hideBar">
-      <button type="button" class="hidebtn" id="hideSummary" aria-expanded="true" aria-controls="summaryBox">Hide summary</button>
-      <button type="button" class="hidebtn" id="hideAttn" aria-expanded="true" aria-controls="attnBox">Hide needs attention</button>
+      <button type="button" class="hidebtn" id="hideSummary" aria-expanded="true" aria-controls="summaryBox">Summary</button>
+      <button type="button" class="hidebtn" id="hideAttn" aria-expanded="true" aria-controls="attnBox">Needs attention</button>
     </div>
   </nav>
 
@@ -1060,9 +1062,9 @@ html, body { overflow-x: hidden; }
   document.getElementById("tabCal").addEventListener("click", function () { showTab("calendar"); });
   window.addEventListener("hashchange", function () { showTab(location.hash === "#calendar" ? "calendar" : "board"); });
 
-  [["hideSummary", "summaryBox", "summary"], ["hideAttn", "attnBox", "needs attention"]].forEach(function (h) {
+  [["hideSummary", "summaryBox", "Summary"], ["hideAttn", "attnBox", "Needs attention"]].forEach(function (h) {
     var btn = document.getElementById(h[0]), box = document.getElementById(h[1]), key = "pbHide_" + h[1];
-    function apply(hidden) { box.hidden = hidden; btn.setAttribute("aria-expanded", String(!hidden)); btn.textContent = (hidden ? "Show " : "Hide ") + h[2]; }
+    function apply(hidden) { box.hidden = hidden; btn.setAttribute("aria-expanded", String(!hidden)); btn.textContent = h[2]; btn.appendChild(el("span", { class: "chev", "aria-hidden": "true" })); btn.title = (hidden ? "Show " : "Hide ") + h[2].toLowerCase(); }
     var start = false; try { start = localStorage.getItem(key) === "1"; } catch (e) {}
     apply(start);
     btn.addEventListener("click", function () { var hid = !box.hidden; apply(hid); try { localStorage.setItem(key, hid ? "1" : "0"); } catch (e) {} });
