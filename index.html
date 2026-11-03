@@ -119,7 +119,7 @@ dialog::backdrop { background: rgba(10, 16, 22, 0.45); }
 .dlg h2 { margin: 0; font-size: 17px; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .row label { font-size: 12px; color: var(--muted); display: grid; gap: 3px; }
-textarea.out { width: 100%; min-height: 300px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font: 12.5px/1.5 var(--font-num); background: var(--bg); color: var(--ink); }
+textarea.out { width: 100%; min-height: 300px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font: 13px/1.65 var(--font-num); background: var(--bg); color: var(--ink); }
 .fine { font-size: 12px; color: var(--muted); }
 .attn h2 { font-size: 15px; margin: 0 0 4px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
 .attn .groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 14px; margin-top: 8px; }
@@ -937,14 +937,22 @@ html, body { overflow-x: hidden; }
     lines.push(oneDay ? (rg[0] === todayIso() ? "Today's posts: " : "Posts: ") + fmtLong(rg[0]) : "Posts: " + fmtShort(rg[0]) + " to " + fmtShort(rg[1]));
     lines.push("");
     if (group === "company") {
-      var topicOf = function (p) { return String(p.title || "").replace(/^Same as social:\s*/, "").trim(); };
+      var topicOf = function (p) {
+        var t = String(p.title || "").replace(/^Same as social:\s*/, "").trim();
+        // channel titles are the message cut at ~100 characters; keep the first full sentence instead
+        if (/\.\.\.$/.test(t)) { var m = /^.*?[.?!]"?(?=\s|$)/.exec(t); if (m) t = m[0]; }
+        return t;
+      };
+      var shown = 0;
       BRANDS.forEach(function (b) {
         var bp = posted.filter(function (p) { return p.brand === b; });
         if (!bp.length) return;
+        if (shown++) { lines.push("────────────────────"); lines.push(""); }
         lines.push(b.toUpperCase());
+        lines.push("");
         var dates = []; bp.forEach(function (p) { if (dates.indexOf(p.date) < 0) dates.push(p.date); }); dates.sort();
         dates.forEach(function (d) {
-          if (!oneDay) lines.push(fmtLong(d));
+          if (!oneDay) { lines.push(fmtLong(d)); lines.push(""); }
           var dp = bp.filter(function (p) { return p.date === d; });
           var topics = [];
           dp.forEach(function (p) { var tk = topicOf(p); if (!topics.some(function (x) { return x.t === tk; })) topics.push({ t: tk, first: PLATFORMS.indexOf(p.platform) }); else topics.forEach(function (x) { if (x.t === tk) x.first = Math.min(x.first, PLATFORMS.indexOf(p.platform)); }); });
@@ -952,14 +960,15 @@ html, body { overflow-x: hidden; }
           var rank = function (i) { return PLATFORMS[i] === "WhatsApp Channel" ? 50 : (PLATFORMS[i] || "").indexOf("Blog") >= 0 || PLATFORMS[i] === "LinkedIn (blog post)" ? 60 : i; };
           topics.sort(function (a, b) { return rank(a.first) - rank(b.first); });
           topics.forEach(function (tp) {
-            lines.push("  " + tp.t);
+            lines.push(tp.t);
             dp.filter(function (p) { return topicOf(p) === tp.t; })
               .sort(function (a, b) { return cmpPlat(a, b); })
-              .forEach(function (p) { lines.push("    " + p.platform + ": " + p.link); });
+              .forEach(function (p) { lines.push("• " + p.platform + ": " + p.link); });
+            lines.push("");
           });
-          lines.push("");
         });
       });
+      while (lines.length && lines[lines.length - 1] === "") lines.pop();
     } else {
     var keyOf = group === "platform" ? function (p) { return p.platform; } : function (p) { return p.date; };
     var keys = [];
