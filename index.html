@@ -295,7 +295,6 @@ html, body { overflow-x: hidden; }
   <section class="tiles" aria-label="Summary" id="summaryBox">
     <div class="tile"><div class="k">Today</div><div class="v" id="tToday">-</div><div class="bar"><i id="bToday" style="width:0"></i></div></div>
     <div class="tile" id="lateTile"><div class="k">Overdue (past, not posted)</div><div class="v" id="tLate">-</div></div>
-    <div class="tile"><div class="k">Posted without a link</div><div class="v" id="tNoLink">-</div></div>
   </section>
 
   <section class="panel attn" aria-label="Needs attention" id="attnBox">
@@ -518,7 +517,6 @@ html, body { overflow-x: hidden; }
     var late = all.filter(function (p) { return effStatus(p) === "Overdue"; }).length;
     document.getElementById("tLate").textContent = late;
     document.getElementById("lateTile").classList.toggle("alert", late > 0);
-    document.getElementById("tNoLink").textContent = all.filter(function (p) { return p.status === "Posted" && !safeUrl(p.link); }).length;
   }
 
   /* ---------- calendar ---------- */
@@ -916,7 +914,6 @@ html, body { overflow-x: hidden; }
     var rg = repRange(), brand = document.getElementById("repBrand").value, group = document.getElementById("repGroup").value;
     var items = list().filter(function (p) { return p.date >= rg[0] && p.date <= rg[1] && (brand === "all" || p.brand === brand) && (state.plat === "all" || p.platform === state.plat); });
     var posted = items.filter(function (p) { return p.status === "Posted" && safeUrl(p.link); });
-    var missing = items.filter(function (p) { return p.status === "Posted" && !safeUrl(p.link); });
     var notDone = items.filter(function (p) { return p.status !== "Posted" && p.status !== "Skipped"; });
     var lines = [];
     var oneDay = rg[0] === rg[1];
@@ -963,7 +960,7 @@ html, body { overflow-x: hidden; }
     }
     if (!posted.length) lines.push("No posted links in this period yet.");
     document.getElementById("repOut").value = lines.join("\n");
-    document.getElementById("repMeta").textContent = posted.length + " links" + (missing.length ? "; " + missing.length + " marked Posted without a link (not in the report)" : "");
+    document.getElementById("repMeta").textContent = posted.length + " links";
   }
 
   /* ---------- wiring ---------- */
