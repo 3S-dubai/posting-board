@@ -279,6 +279,8 @@ html, body { overflow-x: hidden; }
       <div class="controls">
         <label class="fine" for="chanSel">Channel</label>
         <select class="f" id="chanSel"></select>
+        <label class="fine" for="typeSel">Type</label>
+        <select class="f" id="typeSel"><option value="all">All types</option></select>
         <div class="seg" role="group" aria-label="Layout">
           <button type="button" id="layCal" aria-pressed="true">Calendar</button>
           <button type="button" id="layTbl" aria-pressed="false">Table</button>
@@ -720,9 +722,37 @@ html, body { overflow-x: hidden; }
 
   /* ---------- content calendar tab ---------- */
   var STCOL = { Posted: "var(--ok)", Ready: "var(--info)", Planned: "var(--idle)", Overdue: "var(--bad)", Skipped: "var(--line)" };
+  // one label per kind of content, so "Carousel (5 slides)" and "Carousel" sort together
+  var TYPE_ORDER = ["Poster", "Carousel", "Reel / Video", "GBP update", "Blog article", "LinkedIn blog post", "Blog share", "Social share", "Ask 3S", "Workspace Tip", "Poll", "Checklist", "Inside BizCity", "Countdown", "Special day"];
+  function typeCat(p) {
+    var t = String(p.type || "").replace(/^(Morning|Evening) · /, "");
+    if (/^GBP/i.test(t)) return "GBP update";
+    if (p.platform === "LinkedIn (blog post)") return "LinkedIn blog post";
+    if (p.platform === "Blog") return "Blog article";
+    if (/share social/i.test(t)) return "Social share";
+    if (/^blog$/i.test(t)) return "Blog share";
+    if (/national day|commemoration/i.test(t)) return "Special day";
+    if (/reel|video/i.test(t)) return "Reel / Video";
+    if (/carousel/i.test(t)) return "Carousel";
+    if (/poster|graphic/i.test(t)) return "Poster";
+    if (/ask 3s/i.test(t)) return "Ask 3S";
+    if (/workspace tip/i.test(t)) return "Workspace Tip";
+    if (/poll/i.test(t)) return "Poll";
+    if (/checklist/i.test(t)) return "Checklist";
+    if (/inside bizcity|room of the week/i.test(t)) return "Inside BizCity";
+    if (/countdown/i.test(t)) return "Countdown";
+    return t || "Other";
+  }
   function renderContentCal() {
     var chan = document.getElementById("chanSel").value;
-    var all = list().filter(function (p) { return (state.brand === "all" || p.brand === state.brand) && (chan === "all" || p.platform === chan); });
+    var base = list().filter(function (p) { return (state.brand === "all" || p.brand === state.brand) && (chan === "all" || p.platform === chan); });
+    var ts = document.getElementById("typeSel"), want = ts.value || "all";
+    var cats = []; base.forEach(function (p) { var c = typeCat(p); if (cats.indexOf(c) < 0) cats.push(c); });
+    cats.sort(function (a, b) { var x = TYPE_ORDER.indexOf(a), y = TYPE_ORDER.indexOf(b); return (x < 0 ? 99 : x) - (y < 0 ? 99 : y) || (a < b ? -1 : 1); });
+    if (want !== "all" && cats.indexOf(want) < 0) want = "all";
+    ts.textContent = ""; ts.appendChild(el("option", { value: "all" }, "All types"));
+    cats.forEach(function (c) { var o = el("option", { value: c }, c); if (c === want) o.selected = true; ts.appendChild(o); });
+    var all = base.filter(function (p) { return want === "all" || typeCat(p) === want; });
     var g = document.getElementById("ccalGrid"); g.textContent = "";
     ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(function (d) { g.appendChild(el("div", { class: "ccal-dow" }, d)); });
     var first = new Date(MONTH.y, MONTH.m, 1); var lead = (first.getDay() + 6) % 7;
@@ -756,7 +786,7 @@ html, body { overflow-x: hidden; }
     }
     renderContentTable(all, chan);
     document.getElementById("ccalMeta").textContent = Object.keys(posts).length
-      ? (chan === "all" ? "All channels" : chan) + ": " + count + " posts this month, " + done + " posted. Click a post to open it on the posting board."
+      ? (chan === "all" ? "All channels" : chan) + (document.getElementById("typeSel").value !== "all" ? ", " + document.getElementById("typeSel").value : "") + ": " + count + " posts this month, " + done + " posted. Click a post to open it on the posting board."
       : "Loading posts...";
   }
   var dlReady = false;
@@ -1073,6 +1103,7 @@ html, body { overflow-x: hidden; }
   cs.appendChild(el("option", { value: "all" }, "All channels"));
   PLATFORMS.forEach(function (p) { var o = el("option", { value: p }, p); if (p === "WhatsApp Channel") o.selected = true; cs.appendChild(o); });
   cs.addEventListener("change", renderContentCal);
+  document.getElementById("typeSel").addEventListener("change", renderContentCal);
   document.getElementById("layCal").addEventListener("click", function () { setLayout("calendar"); });
   document.getElementById("layTbl").addEventListener("click", function () { setLayout("table"); });
   document.getElementById("dlCsv").addEventListener("click", downloadTable);
