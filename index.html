@@ -457,9 +457,18 @@ html, body { overflow-x: hidden; }
   var BLOGREF = { "3S Business": { 2: "3s-2026-11-10-blog", 3: "3s-2026-11-12-blog", 5: "3s-2026-11-17-blog", 6: "3s-2026-11-19-blog", 7: "3s-2026-11-19-blog2", 9: "3s-2026-11-24-blog", 11: "3s-2026-11-26-blog", 12: "3s-2026-12-01-blog" },
                   "BizCity Group": { 1: "bc-2026-11-10-blog", 4: "bc-2026-11-17-blog", 8: "bc-2026-11-24-blog", 10: "bc-2026-11-26-blog" } };
   var MON = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-  function utm(brand, date) {
+  function utm(brand, date, source) {
     var d = parse(date);
-    return "utm_source=whatsapp_channel&utm_medium=social&utm_campaign=nov2026_" + (brand === "3S Business" ? "3s" : "bizcity") + "&utm_content=" + MON[d.getMonth()] + pad(d.getDate());
+    return "utm_source=" + (source || "whatsapp_channel") + "&utm_medium=social&utm_campaign=nov2026_" + (brand === "3S Business" ? "3s" : "bizcity") + "&utm_content=" + MON[d.getMonth()] + pad(d.getDate());
+  }
+  // "New blog N" placeholders become the live blog link (tagged per channel) once it is pasted on the Blog row
+  function resolveBlog(p, source) {
+    var m = /New (?:BizCity )?blog (\d+)/.exec(p.postLink || "");
+    if (!m || /^https?:/.test(p.postLink || "")) return;
+    var ref = (BLOGREF[p.brand] || {})[+m[1]]; var b = ref && posts[ref];
+    p.blogTitle = b ? b.title : "";
+    if (b && safeUrl(b.link)) p.postLink = b.link + (b.link.indexOf("?") < 0 ? "?" : "&") + utm(p.brand, p.date, source);
+    else p.pendingBlog = true;
   }
   // WhatsApp messages are stored on one line; lay them out the way they should read in the channel
   function fmtMsg(t) {
@@ -474,6 +483,8 @@ html, body { overflow-x: hidden; }
     var arr = Object.keys(posts).map(function (id) { var d = posts[id]; return Object.assign({ id: id }, d); })
       .filter(function (p) { return p.date && p.brand && p.platform; });
     arr.forEach(function (p) {
+      var liBlog = p.platform === "LinkedIn (blog post)";
+      if (liBlog) { resolveBlog(p, "linkedin"); return; }
       if (p.platform !== "WhatsApp Channel") return;
       if (p.slot) p.type = p.slot + " · " + (p.type || "");
       if (p.socialRef) {
@@ -492,13 +503,7 @@ html, body { overflow-x: hidden; }
         var soc = arr.filter(function (q) { return q.brand === p.brand && q.date === p.date && q.platform === "Instagram"; })[0];
         if (soc) p.title = "Same as social: " + soc.title;
       }
-      var m = /New (?:BizCity )?blog (\d+)/.exec(p.postLink || "");
-      if (m && !/^https?:/.test(p.postLink || "")) {
-        var ref = (BLOGREF[p.brand] || {})[+m[1]]; var b = ref && posts[ref];
-        p.blogTitle = b ? b.title : "";
-        if (b && safeUrl(b.link)) p.postLink = b.link + (b.link.indexOf("?") < 0 ? "?" : "&") + utm(p.brand, p.date);
-        else p.pendingBlog = true;
-      }
+      resolveBlog(p, "whatsapp_channel");
       if (p.message) p.message = fmtMsg(p.message);
     });
     return arr;
