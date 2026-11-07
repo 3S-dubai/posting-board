@@ -137,6 +137,15 @@ textarea.out { width: 100%; min-height: 300px; border: 1px solid var(--line); bo
 .aitem .what b { font-weight: 600; }
 .aitem .what .atype { display: inline-block; font-size: 11.5px; font-weight: 500; color: var(--idle); background: var(--idlebg); border-radius: 999px; padding: 1px 8px; margin-left: 6px; white-space: nowrap; }
 .aitem .msgwrap { grid-column: 2; }
+.aitem .achips, .aitem .apanes { grid-column: 2; display: flex; flex-wrap: wrap; gap: 6px; }
+.aitem .apanes { flex-direction: column; gap: 8px; }
+.aitem .achips:empty, .aitem .apanes:empty { display: none; }
+.achip { font-size: 12px; font-weight: 600; border: 1px solid transparent; border-radius: 999px; padding: 2px 10px; cursor: pointer; }
+.achip[aria-expanded="true"] { border-color: currentColor; }
+.achip.st-Overdue { background: var(--badbg); color: var(--bad); }
+.apane { border-left: 3px solid var(--line); padding-left: 10px; display: grid; gap: 6px; }
+.apane[hidden] { display: none; }
+.apane .aplat { font-size: 12.5px; font-weight: 600; }
 .aitem .ctl { grid-column: 2; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .aitem .ctl input.link { flex: 1 1 200px; }
 .view { display: grid; gap: 16px; }
@@ -686,6 +695,7 @@ html, body { overflow-x: hidden; }
   }
 
   /* ---------- needs attention ---------- */
+  var openAttn = {};
   function renderAttn() {
     var all = visible(list()); var t = todayIso();
     var late = all.filter(function (p) { return effStatus(p) === "Overdue"; }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : cmpPlat(a, b); });
@@ -699,9 +709,18 @@ html, body { overflow-x: hidden; }
       var col = el("div", { class: g[0] });
       var h = el("h3", null, g[1]); h.appendChild(el("span", { class: "count" }, String(g[2].length))); col.appendChild(h);
       if (!g[2].length) col.appendChild(el("div", { class: "fine" }, "None"));
-      var shown = g[2].slice(0, 40), lastBrand = null;
-      shown.sort(function (a, b) { return BRANDS.indexOf(a.brand) - BRANDS.indexOf(b.brand) || (a.date < b.date ? -1 : a.date > b.date ? 1 : cmpPlat(a, b)); });
-      shown.forEach(function (p) {
+      // one row per post: the same title on the same day for one brand, whatever the platforms
+      var byKey = {}, rows = [];
+      g[2].forEach(function (p) {
+        var k = p.brand + "|" + p.date + "|" + (p.title || p.id);
+        if (!byKey[k]) { byKey[k] = []; rows.push(byKey[k]); }
+        byKey[k].push(p);
+      });
+      rows.forEach(function (r) { r.sort(cmpPlat); });
+      rows.sort(function (a, b) { return BRANDS.indexOf(a[0].brand) - BRANDS.indexOf(b[0].brand) || (a[0].date < b[0].date ? -1 : a[0].date > b[0].date ? 1 : cmpPlat(a[0], b[0])); });
+      var lastBrand = null;
+      rows.slice(0, 40).forEach(function (r) {
+        var p = r[0];
         if (p.brand !== lastBrand) {
           lastBrand = p.brand;
           var n = g[2].filter(function (x) { return x.brand === p.brand; }).length;
@@ -713,14 +732,37 @@ html, body { overflow-x: hidden; }
         var when = el("button", { type: "button", class: "when", title: "Open " + fmtLong(p.date) }, fmtShort(p.date));
         when.addEventListener("click", function () { select(p.date); document.querySelector(".day").scrollIntoView({ behavior: "smooth", block: "start" }); });
         it.appendChild(when);
-        var what = el("div", { class: "what" }); what.appendChild(el("b", null, p.platform)); if (p.type) what.appendChild(el("span", { class: "atype" }, p.type)); what.appendChild(rich("span", null, " · " + (p.title || "")));
+        var what = el("div", { class: "what" });
+        if (r.length === 1) what.appendChild(el("b", null, p.platform));
+        var types = []; r.forEach(function (x) { if (x.type && types.indexOf(x.type) < 0) types.push(x.type); });
+        types.forEach(function (t) { what.appendChild(el("span", { class: "atype" }, t)); });
+        what.appendChild(rich("span", null, (r.length === 1 ? " · " : " ") + (p.title || "")));
         it.appendChild(what);
-        var ctl = el("div", { class: "ctl" }); ctl.appendChild(statusControl(p, "ast-")); ctl.appendChild(linkControl(p, "aln-"));
-        it.appendChild(ctl);
-        if (p.message) { var mb = messageBox(p); mb.className = "msgwrap"; it.appendChild(mb); }
+        if (r.length === 1) {
+          var ctl = el("div", { class: "ctl" }); ctl.appendChild(statusControl(p, "ast-")); ctl.appendChild(linkControl(p, "aln-"));
+          it.appendChild(ctl);
+          if (p.message) { var mb = messageBox(p); mb.className = "msgwrap"; it.appendChild(mb); }
+        } else {
+          // a chip per platform; click one to open its status and link
+          var chips = el("div", { class: "achips" }), panes = el("div", { class: "apanes" });
+          r.forEach(function (x) {
+            var chip = el("button", { type: "button", class: "achip st-" + effStatus(x), "aria-expanded": String(!!openAttn[x.id]), title: x.platform + ": " + effStatus(x) + ". Click to add the link." }, x.platform);
+            var pane = el("div", { class: "apane" }); pane.hidden = !openAttn[x.id];
+            pane.appendChild(el("div", { class: "aplat" }, x.platform + (x.type && types.length > 1 ? " · " + x.type : "")));
+            var c = el("div", { class: "ctl" }); c.appendChild(statusControl(x, "ast-")); c.appendChild(linkControl(x, "aln-"));
+            pane.appendChild(c);
+            if (x.message) { var m = messageBox(x); m.className = "msgwrap"; pane.appendChild(m); }
+            chip.addEventListener("click", function () {
+              openAttn[x.id] = !openAttn[x.id]; pane.hidden = !openAttn[x.id]; chip.setAttribute("aria-expanded", String(!!openAttn[x.id]));
+              if (openAttn[x.id]) { var li = pane.querySelector("input.link"); if (li) li.focus(); }
+            });
+            chips.appendChild(chip); panes.appendChild(pane);
+          });
+          it.appendChild(chips); it.appendChild(panes);
+        }
         col.appendChild(it);
       });
-      if (g[2].length > 40) col.appendChild(el("div", { class: "fine" }, (g[2].length - 40) + " more: use the calendar to see them by day."));
+      if (rows.length > 40) col.appendChild(el("div", { class: "fine" }, (rows.length - 40) + " more: use the calendar to see them by day."));
       groups.appendChild(col);
     });
     body.appendChild(groups);
