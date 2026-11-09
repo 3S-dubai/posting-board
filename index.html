@@ -503,11 +503,17 @@ html, body { overflow-x: hidden; }
       if (p.slot) p.type = p.slot + " · " + (p.type || "");
       if (p.socialRef) {
         var SOC = ["Instagram", "Facebook", "LinkedIn", "TikTok", "YouTube Shorts"];
+        /* optional socialMatch "reel" | "carousel": one share message per creative when a day has both */
+        var kindOk = function (q) {
+          if (!p.socialMatch) return true;
+          var isReel = /reel|video/i.test(q.type || "");
+          return p.socialMatch === "reel" ? isReel : !isReel;
+        };
         var links = [];
         SOC.forEach(function (pl) {
           Object.keys(posts).forEach(function (id) {
             var q = posts[id];
-            if (q.brand === p.brand && q.date === p.date && q.platform === pl && safeUrl(q.link)) links.push(pl + ": " + q.link);
+            if (q.brand === p.brand && q.date === p.date && q.platform === pl && safeUrl(q.link) && kindOk(q)) links.push(pl + ": " + q.link);
           });
         });
         if (p.message) p.message = p.message.replace(/\s+on Instagram\s*$/, ":").replace(/See our post\s*$/, "See our post:");
