@@ -157,14 +157,16 @@ textarea.out { width: 100%; min-height: 300px; border: 1px solid var(--line); bo
 .view { display: grid; gap: 16px; }
 .tabs { align-items: center; flex-wrap: wrap; }
 .hidebar { display: flex; gap: 6px; margin-left: auto; padding: 4px 0; align-items: center; }
-.tabs .hidebtn { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; margin: 0; font-size: 12px; font-weight: 500; color: var(--muted); background: var(--panel); }
-.tabs .hidebtn:hover { border-color: var(--accent); color: var(--accent); }
-.tabs .hidebtn[aria-expanded="false"] { color: var(--panel); background: var(--accent); border-color: var(--accent); }
-.hidebtn .chev { display: inline-block; width: 6px; height: 6px; margin-left: 7px; border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor; transform: translateY(-1px) rotate(225deg); transition: transform .15s; }
-.hidebtn[aria-expanded="false"] .chev { transform: translateY(-3px) rotate(45deg); }
+.tabs .hidebtn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px 4px 12px; margin: 0; font-size: 12px; font-weight: 500; color: var(--muted); background: var(--panel); }
+.tabs .hidebtn:hover { border-color: var(--accent); }
+.tabs .hidebtn[aria-expanded="true"] { color: var(--panel); background: var(--accent); border-color: var(--accent); }
+.hidebtn .sw { position: relative; width: 26px; height: 14px; border-radius: 999px; background: var(--line); flex: 0 0 auto; transition: background .15s; }
+.hidebtn .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: left .15s; }
+.hidebtn[aria-expanded="true"] .sw { background: rgba(255,255,255,.45); }
+.hidebtn[aria-expanded="true"] .sw::after { left: 14px; }
+.hidebtn .st { font-size: 10px; font-weight: 700; letter-spacing: .03em; opacity: .85; min-width: 20px; }
 .hidebar[hidden] { display: none; }
 .hidebtn { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 3px 12px; font-size: 12px; cursor: pointer; color: var(--muted); }
-.hidebtn[aria-expanded="false"] { color: var(--accent); border-color: var(--accent); }
 #summaryBox[hidden], #attnBox[hidden], #webBox[hidden] { display: none; }
 .webgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 8px; }
 .website { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
@@ -300,9 +302,9 @@ html, body { overflow-x: hidden; }
     <button type="button" role="tab" id="tabBoard" aria-controls="viewBoard" aria-selected="true">Posting board</button>
     <button type="button" role="tab" id="tabCal" aria-controls="viewCal" aria-selected="false">Content calendar</button>
     <div class="hidebar" id="hideBar">
-      <button type="button" class="hidebtn" id="hideSummary" aria-expanded="true" aria-controls="summaryBox">Summary</button>
+      <button type="button" class="hidebtn" id="hideSummary" aria-expanded="false" aria-controls="summaryBox">Summary</button>
       <button type="button" class="hidebtn" id="hideAttn" aria-expanded="false" aria-controls="attnBox">Needs attention</button>
-      <button type="button" class="hidebtn" id="hideWeb" aria-expanded="true" aria-controls="webBox">New on websites</button>
+      <button type="button" class="hidebtn" id="hideWeb" aria-expanded="false" aria-controls="webBox">New on websites</button>
     </div>
   </nav>
 
@@ -337,12 +339,12 @@ html, body { overflow-x: hidden; }
   </section>
 
   <div id="viewBoard" role="tabpanel" aria-labelledby="tabBoard" class="view">
-  <section class="tiles" aria-label="Summary" id="summaryBox">
+  <section class="tiles" aria-label="Summary" id="summaryBox" hidden>
     <div class="tile"><div class="k">Today</div><div class="v" id="tToday">-</div><div class="bar"><i id="bToday" style="width:0"></i></div></div>
     <div class="tile" id="lateTile"><div class="k">Overdue (past, not posted)</div><div class="v" id="tLate">-</div></div>
   </section>
 
-  <section class="panel" aria-label="New on our websites" id="webBox">
+  <section class="panel" aria-label="New on our websites" id="webBox" hidden>
     <h2>New on our websites <span class="fine" id="webSub">Loading...</span></h2>
     <div class="webgrid" id="webGrid"></div>
   </section>
@@ -1263,9 +1265,9 @@ html, body { overflow-x: hidden; }
   document.getElementById("tabCal").addEventListener("click", function () { showTab("calendar"); });
   window.addEventListener("hashchange", function () { showTab(location.hash === "#calendar" ? "calendar" : "board"); });
 
-  [["hideSummary", "summaryBox", "Summary", false], ["hideAttn", "attnBox", "Needs attention", true], ["hideWeb", "webBox", "New on websites", false]].forEach(function (h) {
-    var btn = document.getElementById(h[0]), box = document.getElementById(h[1]), key = "pbHide2_" + h[1];
-    function apply(hidden) { box.hidden = hidden; btn.setAttribute("aria-expanded", String(!hidden)); btn.textContent = h[2]; btn.appendChild(el("span", { class: "chev", "aria-hidden": "true" })); btn.title = (hidden ? "Show " : "Hide ") + h[2].toLowerCase(); }
+  [["hideSummary", "summaryBox", "Summary", true], ["hideAttn", "attnBox", "Needs attention", true], ["hideWeb", "webBox", "New on websites", true]].forEach(function (h) {
+    var btn = document.getElementById(h[0]), box = document.getElementById(h[1]), key = "pbHide3_" + h[1];
+    function apply(hidden) { box.hidden = hidden; btn.setAttribute("aria-expanded", String(!hidden)); btn.textContent = ""; btn.appendChild(el("span", null, h[2])); btn.appendChild(el("span", { class: "sw", "aria-hidden": "true" })); btn.appendChild(el("span", { class: "st", "aria-hidden": "true" }, hidden ? "OFF" : "ON")); btn.title = (hidden ? "Click to show " : "Click to hide ") + h[2].toLowerCase(); }
     var start = h[3]; try { var saved = localStorage.getItem(key); if (saved !== null) start = saved === "1"; } catch (e) {}
     apply(start);
     btn.addEventListener("click", function () { var hid = !box.hidden; apply(hid); try { localStorage.setItem(key, hid ? "1" : "0"); } catch (e) {} });
