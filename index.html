@@ -1024,7 +1024,7 @@ html, body { overflow-x: hidden; }
 
   /* ---------- new on our websites (read live from each WordPress site) ---------- */
   var SITES = [["3S Business", "https://3sbusinessme.com"], ["BizCity Group", "https://bizcitygroup.com"], ["3S Group", "https://3sgroupme.com"]];
-  var UTILITY = /\/(contact[\w-]*|thank[\w-]*|book[\w-]*|privacy[\w-]*|terms[\w-]*|blogs?|home|faqs?|frequently-asked-questions|teams?|our-team|careers?|cart|checkout|my-account|cost-calculator|sitemap[\w-]*|get-the-app|coming-soon|sample-page|[\w-]*links|about[\w-]*|who-we-are|the-group|packages|pro-packages|[\w-]*header|[\w-]*footer|gallery|business-setup)\/?$/i;
+  var UTILITY = /\/(contact[\w-]*|thank[\w-]*|book[\w-]*|privacy[\w-]*|terms[\w-]*|blogs?|home|faqs?|frequently-asked-questions|teams?|our-team|careers?|cart|checkout|my-account|cost-calculator|sitemap[\w-]*|get-the-app|coming-soon|sample-page|[\w-]*links|about[\w-]*|who-we-are|the-group|packages|pro-packages|[\w-]*header|[\w-]*footer|gallery)\/?$/i;
   function isUtility(link) { try { var u = new URL(link); if (u.pathname === "/" || u.pathname === "") return true; } catch (e) {} return UTILITY.test(link); }
   var webData = {}, webErr = {};
   function webDate(s) { var d = new Date(s); return isNaN(d) ? "" : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }); }
