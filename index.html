@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noarchive">
-<title>3S and BizCity Posting Board</title>
+<title>3S Group Posting Board</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
@@ -19,6 +19,8 @@
   --accent: #2d5275;
   --brand3s: #2d5275;
   --brandbc: #9a7440;
+  --brandgr: #5b4a8b;
+  --brandhr: #2f7d6d;
   --ok: #1e7a4c; --okbg: #e3f4ea;
   --warn: #9a6500; --warnbg: #fdf1d8;
   --bad: #b3261e; --badbg: #fbe4e2;
@@ -31,7 +33,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #11161c; --panel: #19212a; --ink: #e6ebf0; --muted: #9aa8b5; --line: #2b3641;
-    --accent: #8fb6dc; --brand3s: #8fb6dc; --brandbc: #d2a86b;
+    --accent: #8fb6dc; --brand3s: #8fb6dc; --brandbc: #d2a86b; --brandgr: #b3a5e0; --brandhr: #7fcfbd;
     --ok: #6fd19b; --okbg: #17352a; --warn: #f0c060; --warnbg: #3a2e12;
     --bad: #ff8a80; --badbg: #3d1c1a; --info: #8cbcf5; --infobg: #172c45;
     --idle: #a3afbb; --idlebg: #222c36; color-scheme: dark;
@@ -39,7 +41,7 @@
 }
 :root[data-theme="dark"] {
   --bg: #11161c; --panel: #19212a; --ink: #e6ebf0; --muted: #9aa8b5; --line: #2b3641;
-  --accent: #8fb6dc; --brand3s: #8fb6dc; --brandbc: #d2a86b;
+  --accent: #8fb6dc; --brand3s: #8fb6dc; --brandbc: #d2a86b; --brandgr: #b3a5e0; --brandhr: #7fcfbd;
   --ok: #6fd19b; --okbg: #17352a; --warn: #f0c060; --warnbg: #3a2e12;
   --bad: #ff8a80; --badbg: #3d1c1a; --info: #8cbcf5; --infobg: #172c45;
   --idle: #a3afbb; --idlebg: #222c36; color-scheme: dark;
@@ -163,7 +165,21 @@ textarea.out { width: 100%; min-height: 300px; border: 1px solid var(--line); bo
 .hidebar[hidden] { display: none; }
 .hidebtn { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 3px 12px; font-size: 12px; cursor: pointer; color: var(--muted); }
 .hidebtn[aria-expanded="false"] { color: var(--accent); border-color: var(--accent); }
-#summaryBox[hidden], #attnBox[hidden] { display: none; }
+#summaryBox[hidden], #attnBox[hidden], #webBox[hidden] { display: none; }
+.webgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 8px; }
+.website { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.website h3 { font-size: 13px; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+.website h3::before { content: ""; width: 4px; height: 16px; border-radius: 2px; background: var(--b); }
+.webtot { display: flex; gap: 14px; margin: 2px 0 8px; font-size: 12px; color: var(--muted); }
+.webtot b { font-family: var(--font-num); font-size: 18px; color: var(--ink); margin-right: 4px; }
+.weblist { list-style: none; margin: 0 0 8px; padding: 0; font-size: 12.5px; }
+.weblist li { display: flex; gap: 6px; align-items: baseline; padding: 3px 0; border-top: 1px dashed var(--line); }
+.weblist li:first-child { border-top: 0; }
+.weblist a { color: var(--ink); text-decoration: none; flex: 1; }
+.weblist a:hover { text-decoration: underline; }
+.weblist .wd { font-family: var(--font-num); font-size: 11px; color: var(--muted); white-space: nowrap; }
+.weblist .wnew { font-size: 10px; font-weight: 700; color: var(--ok); background: var(--okbg); border-radius: 4px; padding: 0 4px; }
+.webcap { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 6px 0 2px; }
 .view[hidden], .ccal[hidden] { display: none; }
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
 .tabs button { border: 0; background: transparent; padding: 9px 14px; cursor: pointer; font-weight: 600; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -1px; }
@@ -262,13 +278,15 @@ html, body { overflow-x: hidden; }
   <header class="top">
     <div>
       <h1>Posting Board</h1>
-      <div class="sub">3S Business and BizCity Group, November 2026. Every planned post, its status and its live link.</div>
+      <div class="sub">3S Business, BizCity Group, 3S Group and 3S HR Consulting, November 2026. Every planned post, its status and its live link.</div>
     </div>
     <div class="controls">
       <div class="seg" role="group" aria-label="Brand">
-        <button type="button" data-brand="all" aria-pressed="true">Both brands</button>
+        <button type="button" data-brand="all" aria-pressed="true">All brands</button>
         <button type="button" data-brand="3S Business" aria-pressed="false">3S Business</button>
         <button type="button" data-brand="BizCity Group" aria-pressed="false">BizCity Group</button>
+        <button type="button" data-brand="3S Group" aria-pressed="false">3S Group</button>
+        <button type="button" data-brand="3S HR Consulting" aria-pressed="false">3S HR</button>
       </div>
       <select class="f" id="platFilter" aria-label="Platform"><option value="all">All platforms</option></select>
       <button type="button" class="btn" id="addBtn" hidden>Add post</button>
@@ -284,6 +302,7 @@ html, body { overflow-x: hidden; }
     <div class="hidebar" id="hideBar">
       <button type="button" class="hidebtn" id="hideSummary" aria-expanded="true" aria-controls="summaryBox">Summary</button>
       <button type="button" class="hidebtn" id="hideAttn" aria-expanded="false" aria-controls="attnBox">Needs attention</button>
+      <button type="button" class="hidebtn" id="hideWeb" aria-expanded="true" aria-controls="webBox">New on websites</button>
     </div>
   </nav>
 
@@ -295,6 +314,8 @@ html, body { overflow-x: hidden; }
         <select class="f" id="chanSel"></select>
         <label class="fine" for="typeSel">Type</label>
         <select class="f" id="typeSel"><option value="all">All types</option></select>
+        <label class="fine" for="stSel">Status</label>
+        <select class="f" id="stSel"><option value="all">All statuses</option><option value="Planned">Planned</option><option value="Ready">Ready</option><option value="Overdue">Overdue</option><option value="Posted">Posted</option><option value="Skipped">Skipped</option><option value="open">Not posted yet (planned, ready, overdue)</option></select>
         <div class="seg" role="group" aria-label="Layout">
           <button type="button" id="layCal" aria-pressed="true">Calendar</button>
           <button type="button" id="layTbl" aria-pressed="false">Table</button>
@@ -311,6 +332,7 @@ html, body { overflow-x: hidden; }
       <span style="--c: var(--info)">Ready</span>
       <span style="--c: var(--idle)">Planned</span>
       <span style="--c: var(--bad)">Overdue</span>
+      <span style="--c: var(--line)">Skipped</span>
     </div>
   </section>
 
@@ -318,6 +340,11 @@ html, body { overflow-x: hidden; }
   <section class="tiles" aria-label="Summary" id="summaryBox">
     <div class="tile"><div class="k">Today</div><div class="v" id="tToday">-</div><div class="bar"><i id="bToday" style="width:0"></i></div></div>
     <div class="tile" id="lateTile"><div class="k">Overdue (past, not posted)</div><div class="v" id="tLate">-</div></div>
+  </section>
+
+  <section class="panel" aria-label="New on our websites" id="webBox">
+    <h2>New on our websites <span class="fine" id="webSub">Loading...</span></h2>
+    <div class="webgrid" id="webGrid"></div>
   </section>
 
   <section class="panel attn" aria-label="Needs attention" id="attnBox" hidden>
@@ -377,9 +404,11 @@ html, body { overflow-x: hidden; }
       </label>
       <label for="repBrand">Brand
         <select class="f" id="repBrand">
-          <option value="all">Both brands</option>
+          <option value="all">All brands</option>
           <option value="3S Business">3S Business</option>
           <option value="BizCity Group">BizCity Group</option>
+          <option value="3S Group">3S Group</option>
+          <option value="3S HR Consulting">3S HR Consulting</option>
         </select>
       </label>
     </div>
@@ -400,7 +429,7 @@ html, body { overflow-x: hidden; }
     <div class="row">
       <label for="aDate">Date <input class="f" type="date" id="aDate" required></label>
       <label for="aBrand">Brand
-        <select class="f" id="aBrand"><option>3S Business</option><option>BizCity Group</option></select>
+        <select class="f" id="aBrand"><option>3S Business</option><option>BizCity Group</option><option>3S Group</option><option>3S HR Consulting</option></select>
       </label>
       <label for="aPlat">Platform
         <select class="f" id="aPlat"></select>
@@ -433,7 +462,12 @@ html, body { overflow-x: hidden; }
 (function () {
   var PLATFORMS = ["WhatsApp Channel", "Instagram", "Facebook", "LinkedIn", "TikTok", "YouTube Shorts", "Google Business Profile", "Blog", "LinkedIn (blog post)"];
   var STATUSES = ["Planned", "Ready", "Posted", "Skipped"];
-  var BRANDS = ["3S Business", "BizCity Group"];
+  var BRANDS = ["3S Business", "BizCity Group", "3S Group", "3S HR Consulting"];
+  var BCOL = { "3S Business": "var(--brand3s)", "BizCity Group": "var(--brandbc)", "3S Group": "var(--brandgr)", "3S HR Consulting": "var(--brandhr)" };
+  var BSHORT = { "3S Business": "3S Business", "BizCity Group": "BizCity", "3S Group": "3S Group", "3S HR Consulting": "3S HR" };
+  var BRGB = { "3S Business": [45, 82, 117], "BizCity Group": [154, 116, 64], "3S Group": [91, 74, 139], "3S HR Consulting": [47, 125, 109] };
+  var BUTM = { "3S Business": "3s", "BizCity Group": "bizcity", "3S Group": "3sgroup", "3S HR Consulting": "3shr" };
+  function bcol(b) { return BCOL[b] || "var(--idle)"; }
   var MONTH = { y: 2026, m: 10 }; // November (0-based month)
   var posts = {};      // id -> data
   var state = { brand: "all", plat: "all", sel: null };
@@ -473,7 +507,7 @@ html, body { overflow-x: hidden; }
   var MON = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
   function utm(brand, date, source) {
     var d = parse(date);
-    return "utm_source=" + (source || "whatsapp_channel") + "&utm_medium=social&utm_campaign=nov2026_" + (brand === "3S Business" ? "3s" : "bizcity") + "&utm_content=" + MON[d.getMonth()] + pad(d.getDate());
+    return "utm_source=" + (source || "whatsapp_channel") + "&utm_medium=social&utm_campaign=nov2026_" + (BUTM[brand] || "3s") + "&utm_content=" + MON[d.getMonth()] + pad(d.getDate());
   }
   // "New blog N" placeholders become the live blog link (tagged per channel) once it is pasted on the Blog row
   function resolveBlog(p, source) {
@@ -604,7 +638,7 @@ html, body { overflow-x: hidden; }
         .sort(function (a, b) { return cmpPlat(a, b); });
       if (!rows.length) return;
       var blk = el("div", { class: "brandblock" });
-      var h = el("h3", null, brand); h.style.setProperty("--b", brand === "3S Business" ? "var(--brand3s)" : "var(--brandbc)");
+      var h = el("h3", null, brand); h.style.setProperty("--b", bcol(brand));
       blk.appendChild(h);
       var wrap = el("div", { class: "tblwrap" }); var t = el("table", { class: "tbl" });
       var thead = el("thead"); var hr = el("tr");
@@ -735,7 +769,7 @@ html, body { overflow-x: hidden; }
           lastBrand = p.brand;
           var n = g[2].filter(function (x) { return x.brand === p.brand; }).length;
           var bh = el("div", { class: "abrand" }, p.brand + " (" + n + ")");
-          bh.style.setProperty("--b", p.brand === "3S Business" ? "var(--brand3s)" : "var(--brandbc)");
+          bh.style.setProperty("--b", bcol(p.brand));
           col.appendChild(bh);
         }
         var it = el("div", { class: "aitem" });
@@ -810,7 +844,8 @@ html, body { overflow-x: hidden; }
     if (want !== "all" && cats.indexOf(want) < 0) want = "all";
     ts.textContent = ""; ts.appendChild(el("option", { value: "all" }, "All types"));
     cats.forEach(function (c) { var o = el("option", { value: c }, c); if (c === want) o.selected = true; ts.appendChild(o); });
-    var all = base.filter(function (p) { return want === "all" || typeCat(p) === want; });
+    var stWant = document.getElementById("stSel").value || "all";
+    var all = base.filter(function (p) { if (want !== "all" && typeCat(p) !== want) return false; if (stWant === "all") return true; var es = effStatus(p); return stWant === "open" ? (es !== "Posted" && es !== "Skipped") : es === stWant; });
     var g = document.getElementById("ccalGrid"); g.textContent = "";
     ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(function (d) { g.appendChild(el("div", { class: "ccal-dow" }, d)); });
     var first = new Date(MONTH.y, MONTH.m, 1); var lead = (first.getDay() + 6) % 7;
@@ -833,8 +868,8 @@ html, body { overflow-x: hidden; }
         var es = effStatus(p);
         var b = el("button", { type: "button", class: "citem", title: p.brand + " | " + p.platform + " | " + es + "\n" + (p.message || p.title || "") });
         b.style.setProperty("--st", STCOL[es] || "var(--idle)");
-        b.style.setProperty("--b", p.brand === "3S Business" ? "var(--brand3s)" : "var(--brandbc)");
-        b.appendChild(el("span", { class: "cb" }, p.brand === "3S Business" ? "3S Business" : "BizCity"));
+        b.style.setProperty("--b", bcol(p.brand));
+        b.appendChild(el("span", { class: "cb" }, BSHORT[p.brand] || p.brand));
         b.appendChild(el("span", { class: "ct" }, (chan === "all" ? p.platform + " · " : "") + (p.type || "") + " · " + es));
         b.appendChild(rich("span", { class: "tt" }, p.title || ""));
         b.addEventListener("click", function () { if (p.message) openMsgs[p.id] = true; goBoard(p.date); });
@@ -844,7 +879,7 @@ html, body { overflow-x: hidden; }
     }
     renderContentTable(all, chan);
     document.getElementById("ccalMeta").textContent = Object.keys(posts).length
-      ? (chan === "all" ? "All channels" : chan) + (document.getElementById("typeSel").value !== "all" ? ", " + document.getElementById("typeSel").value : "") + ": " + count + " posts this month, " + done + " posted. Click a post to open it on the posting board."
+      ? (chan === "all" ? "All channels" : chan) + (document.getElementById("typeSel").value !== "all" ? ", " + document.getElementById("typeSel").value : "") + (stWant !== "all" ? ", " + document.getElementById("stSel").selectedOptions[0].textContent.toLowerCase() : "") + ": " + count + " posts this month, " + done + " posted. Click a post to open it on the posting board."
       : "Loading posts...";
   }
   var dlReady = false;
@@ -872,7 +907,7 @@ html, body { overflow-x: hidden; }
       lines.push([p.date, d.toLocaleDateString("en-GB", { weekday: "short" }), p.brand, p.platform, p.slot || "", String(p.type || "").replace(/^(Morning|Evening) \u00b7 /, ""),
         p.message || p.title || "", effStatus(p), p.link || "", p.pendingBlog || p.pendingSocial ? "" : (p.postLink || "")].map(csvCell).join(","));
     });
-    var brandPart = state.brand === "all" ? "3S and BizCity" : state.brand;
+    var brandPart = state.brand === "all" ? "All brands" : state.brand;
     var chanPart = lastTableChan === "all" ? "All channels" : lastTableChan;
     try { await dl.save({ filename: "Content calendar - " + brandPart + " - " + chanPart + " - November 2026.csv", data: "\ufeff" + lines.join("\r\n") }); notice(""); }
     catch (e) { if (!e || e.code !== "declined") notice("The download did not start. Try again in a moment."); }
@@ -909,7 +944,7 @@ html, body { overflow-x: hidden; }
         first = false;
         doc.setFont("helvetica", "bold"); doc.setFontSize(15); doc.setTextColor(24, 34, 45);
         doc.text(title, 14, 16);
-        doc.setFontSize(12); doc.setTextColor(b === "3S Business" ? 45 : 154, b === "3S Business" ? 82 : 116, b === "3S Business" ? 117 : 64);
+        doc.setFontSize(12); var rgb = BRGB[b] || [24, 34, 45]; doc.setTextColor(rgb[0], rgb[1], rgb[2]);
         doc.text(b, 14, 24);
         var perDay = {}; br.forEach(function (p) { perDay[p.date] = (perDay[p.date] || 0) + 1; });
         var body = br.map(function (p) {
@@ -927,7 +962,7 @@ html, body { overflow-x: hidden; }
         });
       });
       if (first) { notice("Nothing to put in the PDF for this channel and brand."); return; }
-      var brandPart = state.brand === "all" ? "3S and BizCity" : state.brand;
+      var brandPart = state.brand === "all" ? "All brands" : state.brand;
       var chanPart = chan === "all" ? "All channels" : chan;
       await dl.save({ filename: chanPart + " contents - " + brandPart + " - November 2026.pdf", data: doc.output("blob") });
       notice("");
@@ -954,7 +989,7 @@ html, body { overflow-x: hidden; }
       var es = effStatus(p);
       var tr = el("tr", { class: "prow", tabindex: "0", title: "Open on the posting board" });
       tr.appendChild(el("td", { class: "fine" }, fmtShort(p.date)));
-      var co = el("td", { class: "co" }, p.brand); co.style.setProperty("--b", p.brand === "3S Business" ? "var(--brand3s)" : "var(--brandbc)"); tr.appendChild(co);
+      var co = el("td", { class: "co" }, p.brand); co.style.setProperty("--b", bcol(p.brand)); tr.appendChild(co);
       tr.appendChild(el("td", { class: "plat" }, p.platform));
       tr.appendChild(el("td", { class: "type" }, p.type || ""));
       tr.appendChild(rich("td", { class: "title msgtext" }, p.message || p.title || ""));
@@ -986,7 +1021,62 @@ html, body { overflow-x: hidden; }
     var d = document.querySelector(".day"); if (d) d.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function renderAll() { renderSummary(); renderAttn(); renderCal(); renderDay(); if (!document.getElementById("viewCal").hidden) renderContentCal(); }
+
+  /* ---------- new on our websites (read live from each WordPress site) ---------- */
+  var SITES = [["3S Business", "https://3sbusinessme.com"], ["BizCity Group", "https://bizcitygroup.com"], ["3S Group", "https://3sgroupme.com"]];
+  var UTILITY = /\/(contact[\w-]*|thank[\w-]*|book[\w-]*|privacy[\w-]*|terms[\w-]*|blogs?|home|faqs?|teams?|careers?|cart|checkout|my-account|cost-calculator|sitemap[\w-]*|get-the-app|coming-soon|sample-page)\/?$/i;
+  var webData = {}, webErr = {};
+  function webDate(s) { var d = new Date(s); return isNaN(d) ? "" : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }); }
+  function decodeTitle(t) { var x = document.createElement("textarea"); x.innerHTML = String(t || ""); return x.value; }
+  async function wpList(base, type, n) {
+    var r = await fetch(base + "/wp-json/wp/v2/" + type + "?per_page=" + n + "&orderby=date&order=desc&_fields=date,link,title", { credentials: "omit" });
+    if (!r.ok) throw new Error(type + " " + r.status);
+    return { total: +(r.headers.get("X-WP-Total") || 0), items: await r.json() };
+  }
+  async function loadWebsites() {
+    await Promise.all(SITES.map(async function (s) {
+      try {
+        var res = await Promise.all([wpList(s[1], "posts", 5), wpList(s[1], "pages", 20)]);
+        webData[s[0]] = { url: s[1], posts: res[0], pages: { total: res[1].total, items: res[1].items.filter(function (p) { return !UTILITY.test(p.link); }).slice(0, 5) } };
+      } catch (e) { webErr[s[0]] = true; }
+    }));
+    renderWebsites();
+  }
+  function renderWebsites() {
+    var grid = document.getElementById("webGrid"), sub = document.getElementById("webSub");
+    if (!grid) return;
+    grid.textContent = "";
+    var cut = Date.now() - 14 * 864e5, fresh = 0;
+    var show = SITES.filter(function (s) { return state.brand === "all" || state.brand === s[0]; });
+    if (!show.length) { grid.appendChild(el("div", { class: "fine" }, state.brand + " has no website feed on this board yet.")); sub.textContent = ""; return; }
+    show.forEach(function (s) {
+      var box = el("div", { class: "website" }); box.style.setProperty("--b", bcol(s[0]));
+      box.appendChild(el("h3", null, s[0]));
+      var d = webData[s[0]];
+      if (!d) { box.appendChild(el("div", { class: "fine" }, webErr[s[0]] ? "Could not read " + s[1].replace("https://", "") + " right now." : "Loading...")); grid.appendChild(box); return; }
+      var tot = el("div", { class: "webtot" });
+      var a = el("span"); a.appendChild(el("b", null, String(d.posts.total))); a.appendChild(document.createTextNode("blogs")); tot.appendChild(a);
+      var b = el("span"); b.appendChild(el("b", null, String(d.pages.total))); b.appendChild(document.createTextNode("pages")); tot.appendChild(b);
+      box.appendChild(tot);
+      [["Latest blogs", d.posts.items], ["Latest pages", d.pages.items]].forEach(function (grp) {
+        box.appendChild(el("div", { class: "webcap" }, grp[0]));
+        var ul = el("ul", { class: "weblist" });
+        if (!grp[1].length) ul.appendChild(el("li", { class: "fine" }, "None yet."));
+        grp[1].forEach(function (it) {
+          var li = el("li");
+          var isNew = new Date(it.date).getTime() >= cut; if (isNew) fresh++;
+          if (isNew) li.appendChild(el("span", { class: "wnew" }, "NEW"));
+          li.appendChild(el("a", { href: it.link, target: "_blank", rel: "noopener noreferrer" }, decodeTitle(it.title && it.title.rendered)));
+          li.appendChild(el("span", { class: "wd" }, webDate(it.date)));
+          ul.appendChild(li);
+        });
+        box.appendChild(ul);
+      });
+      grid.appendChild(box);
+    });
+    sub.textContent = fresh ? fresh + " added in the last 14 days" : "Nothing new in the last 14 days";
+  }
+  function renderAll() { renderSummary(); renderAttn(); renderCal(); renderDay(); renderWebsites(); if (!document.getElementById("viewCal").hidden) renderContentCal(); }
   function select(ds) { state.sel = ds; renderCal(); renderDay(); }
 
   /* ---------- writes ---------- */
@@ -1162,6 +1252,7 @@ html, body { overflow-x: hidden; }
   PLATFORMS.forEach(function (p) { var o = el("option", { value: p }, p); if (p === "WhatsApp Channel") o.selected = true; cs.appendChild(o); });
   cs.addEventListener("change", renderContentCal);
   document.getElementById("typeSel").addEventListener("change", renderContentCal);
+  document.getElementById("stSel").addEventListener("change", renderContentCal);
   document.getElementById("layCal").addEventListener("click", function () { setLayout("calendar"); });
   document.getElementById("layTbl").addEventListener("click", function () { setLayout("table"); });
   document.getElementById("dlCsv").addEventListener("click", downloadTable);
@@ -1171,7 +1262,7 @@ html, body { overflow-x: hidden; }
   document.getElementById("tabCal").addEventListener("click", function () { showTab("calendar"); });
   window.addEventListener("hashchange", function () { showTab(location.hash === "#calendar" ? "calendar" : "board"); });
 
-  [["hideSummary", "summaryBox", "Summary", false], ["hideAttn", "attnBox", "Needs attention", true]].forEach(function (h) {
+  [["hideSummary", "summaryBox", "Summary", false], ["hideAttn", "attnBox", "Needs attention", true], ["hideWeb", "webBox", "New on websites", false]].forEach(function (h) {
     var btn = document.getElementById(h[0]), box = document.getElementById(h[1]), key = "pbHide2_" + h[1];
     function apply(hidden) { box.hidden = hidden; btn.setAttribute("aria-expanded", String(!hidden)); btn.textContent = h[2]; btn.appendChild(el("span", { class: "chev", "aria-hidden": "true" })); btn.title = (hidden ? "Show " : "Hide ") + h[2].toLowerCase(); }
     var start = h[3]; try { var saved = localStorage.getItem(key); if (saved !== null) start = saved === "1"; } catch (e) {}
@@ -1184,6 +1275,7 @@ html, body { overflow-x: hidden; }
   state.sel = (parse(t0).getMonth() === MONTH.m && parse(t0).getFullYear() === MONTH.y) ? t0 : iso(new Date(MONTH.y, MONTH.m, 1));
   renderAll();
   showTab(location.hash === "#calendar" ? "calendar" : "board");
+  loadWebsites();
 
   (async function () {
     try { db = await window.claude.use("db"); } catch (e) { db = null; }
