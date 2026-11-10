@@ -1024,7 +1024,8 @@ html, body { overflow-x: hidden; }
 
   /* ---------- new on our websites (read live from each WordPress site) ---------- */
   var SITES = [["3S Business", "https://3sbusinessme.com"], ["BizCity Group", "https://bizcitygroup.com"], ["3S Group", "https://3sgroupme.com"]];
-  var UTILITY = /\/(contact[\w-]*|thank[\w-]*|book[\w-]*|privacy[\w-]*|terms[\w-]*|blogs?|home|faqs?|teams?|careers?|cart|checkout|my-account|cost-calculator|sitemap[\w-]*|get-the-app|coming-soon|sample-page)\/?$/i;
+  var UTILITY = /\/(contact[\w-]*|thank[\w-]*|book[\w-]*|privacy[\w-]*|terms[\w-]*|blogs?|home|faqs?|frequently-asked-questions|teams?|our-team|careers?|cart|checkout|my-account|cost-calculator|sitemap[\w-]*|get-the-app|coming-soon|sample-page|[\w-]*links|about[\w-]*|who-we-are|the-group|packages|pro-packages)\/?$/i;
+  function isUtility(link) { try { var u = new URL(link); if (u.pathname === "/" || u.pathname === "") return true; } catch (e) {} return UTILITY.test(link); }
   var webData = {}, webErr = {};
   function webDate(s) { var d = new Date(s); return isNaN(d) ? "" : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }); }
   function decodeTitle(t) { var x = document.createElement("textarea"); x.innerHTML = String(t || ""); return x.value; }
@@ -1037,7 +1038,7 @@ html, body { overflow-x: hidden; }
     await Promise.all(SITES.map(async function (s) {
       try {
         var res = await Promise.all([wpList(s[1], "posts", 5), wpList(s[1], "pages", 20)]);
-        webData[s[0]] = { url: s[1], posts: res[0], pages: { total: res[1].total, items: res[1].items.filter(function (p) { return !UTILITY.test(p.link); }).slice(0, 5) } };
+        webData[s[0]] = { url: s[1], posts: res[0], pages: { total: res[1].total, items: res[1].items.filter(function (p) { return !isUtility(p.link); }).slice(0, 5) } };
       } catch (e) { webErr[s[0]] = true; }
     }));
     renderWebsites();
@@ -1058,7 +1059,7 @@ html, body { overflow-x: hidden; }
       var a = el("span"); a.appendChild(el("b", null, String(d.posts.total))); a.appendChild(document.createTextNode("blogs")); tot.appendChild(a);
       var b = el("span"); b.appendChild(el("b", null, String(d.pages.total))); b.appendChild(document.createTextNode("pages")); tot.appendChild(b);
       box.appendChild(tot);
-      [["Latest blogs", d.posts.items], ["Latest pages", d.pages.items]].forEach(function (grp) {
+      [["Latest blogs", d.posts.items], ["Latest service pages", d.pages.items]].forEach(function (grp) {
         box.appendChild(el("div", { class: "webcap" }, grp[0]));
         var ul = el("ul", { class: "weblist" });
         if (!grp[1].length) ul.appendChild(el("li", { class: "fine" }, "None yet."));
