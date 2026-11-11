@@ -273,6 +273,11 @@ html, body { overflow-x: hidden; }
   .btn, select.f { padding: 6px 10px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.monthhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.monthhead h2 { margin: 0; flex: 1; text-align: center; }
+.mbtn { width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 50%; background: var(--panel); color: var(--ink); font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
+.mbtn:hover, .mbtn:focus-visible { border-color: var(--accent); color: var(--accent); }
+.ccal-head .mnav { display: inline-flex; align-items: center; gap: 6px; }
 </style>
 </head>
 <body>
@@ -280,7 +285,7 @@ html, body { overflow-x: hidden; }
   <header class="top">
     <div>
       <h1>Posting Board</h1>
-      <div class="sub">3S Business, BizCity Group, 3S Group and 3S HR Consulting, November 2026. Every planned post, its status and its live link.</div>
+      <div class="sub">3S Business, BizCity Group, 3S Group and 3S HR Consulting, <span id="subMonth">November 2026</span>. Every planned post, its status and its live link.</div>
     </div>
     <div class="controls">
       <div class="seg" role="group" aria-label="Brand">
@@ -310,7 +315,7 @@ html, body { overflow-x: hidden; }
 
   <section class="panel ccal" id="viewCal" role="tabpanel" aria-labelledby="tabCal" hidden>
     <div class="ccal-head">
-      <h2>Content calendar, November 2026</h2>
+      <div class="mnav"><button type="button" class="mbtn" id="prevMonth2" aria-label="Previous month">&#8249;</button><h2 id="ccalTitle" style="margin:0">Content calendar, November 2026</h2><button type="button" class="mbtn" id="nextMonth2" aria-label="Next month">&#8250;</button></div>
       <div class="controls">
         <label class="fine" for="chanSel">Channel</label>
         <select class="f" id="chanSel"></select>
@@ -356,7 +361,7 @@ html, body { overflow-x: hidden; }
 
   <div class="main">
     <section class="panel cal" aria-label="Month">
-      <h2 id="calTitle">November 2026</h2>
+      <div class="monthhead"><button type="button" class="mbtn" id="prevMonth" aria-label="Previous month">&#8249;</button><h2 id="calTitle">November 2026</h2><button type="button" class="mbtn" id="nextMonth" aria-label="Next month">&#8250;</button></div>
       <div class="grid7" id="calGrid"></div>
       <div class="legend">
         <span style="--c: var(--ok)">All posted</span>
@@ -470,7 +475,9 @@ html, body { overflow-x: hidden; }
   var BRGB = { "3S Business": [45, 82, 117], "BizCity Group": [154, 116, 64], "3S Group": [91, 74, 139], "3S HR Consulting": [47, 125, 109] };
   var BUTM = { "3S Business": "3s", "BizCity Group": "bizcity", "3S Group": "3sgroup", "3S HR Consulting": "3shr" };
   function bcol(b) { return BCOL[b] || "var(--idle)"; }
-  var MONTH = { y: 2026, m: 10 }; // November (0-based month)
+  var MONTH = (function () { var n = new Date(); return { y: n.getFullYear(), m: n.getMonth() }; })(); // shown month (0-based), starts on the current month
+  function monthLabel() { return new Date(MONTH.y, MONTH.m, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" }); }
+  function setMonthTitles() { var L = monthLabel(); var a = document.getElementById("calTitle"); if (a) a.textContent = L; var b = document.getElementById("ccalTitle"); if (b) b.textContent = "Content calendar, " + L; var c = document.getElementById("subMonth"); if (c) c.textContent = L; }
   var posts = {};      // id -> data
   var state = { brand: "all", plat: "all", sel: null };
   var db = null, user = null, canWrite = null, myId = null;
@@ -601,6 +608,7 @@ html, body { overflow-x: hidden; }
 
   /* ---------- calendar ---------- */
   function renderCal() {
+    setMonthTitles();
     var g = document.getElementById("calGrid"); g.textContent = "";
     ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(function (d) { g.appendChild(el("div", { class: "dow" }, d)); });
     var first = new Date(MONTH.y, MONTH.m, 1); var lead = (first.getDay() + 6) % 7;
@@ -911,7 +919,7 @@ html, body { overflow-x: hidden; }
     });
     var brandPart = state.brand === "all" ? "All brands" : state.brand;
     var chanPart = lastTableChan === "all" ? "All channels" : lastTableChan;
-    try { await dl.save({ filename: "Content calendar - " + brandPart + " - " + chanPart + " - November 2026.csv", data: "\ufeff" + lines.join("\r\n") }); notice(""); }
+    try { await dl.save({ filename: "Content calendar - " + brandPart + " - " + chanPart + " - " + monthLabel() + ".csv", data: "\ufeff" + lines.join("\r\n") }); notice(""); }
     catch (e) { if (!e || e.code !== "declined") notice("The download did not start. Try again in a moment."); }
   }
   function loadScript(src) {
@@ -936,7 +944,7 @@ html, body { overflow-x: hidden; }
       var J = window.jspdf && window.jspdf.jsPDF; if (!J) throw new Error("no jsPDF");
       var doc = new J({ unit: "mm", format: "a4" });
       var chan = lastTableChan, rows = lastTableRows.slice();
-      var title = (chan === "all" ? "Content" : chan) + " contents, November 2026";
+      var title = (chan === "all" ? "Content" : chan) + " contents, " + monthLabel();
       var brands = BRANDS.filter(function (b) { return state.brand === "all" || state.brand === b; });
       var first = true;
       brands.forEach(function (b) {
@@ -966,7 +974,7 @@ html, body { overflow-x: hidden; }
       if (first) { notice("Nothing to put in the PDF for this channel and brand."); return; }
       var brandPart = state.brand === "all" ? "All brands" : state.brand;
       var chanPart = chan === "all" ? "All channels" : chan;
-      await dl.save({ filename: chanPart + " contents - " + brandPart + " - November 2026.pdf", data: doc.output("blob") });
+      await dl.save({ filename: chanPart + " contents - " + brandPart + " - " + monthLabel() + ".pdf", data: doc.output("blob") });
       notice("");
     } catch (e) {
       if (!e || e.code !== "declined") notice("The PDF could not be made. Check your connection and try again.");
@@ -1181,10 +1189,14 @@ html, body { overflow-x: hidden; }
   var pf = document.getElementById("platFilter"), ap = document.getElementById("aPlat");
   PLATFORMS.forEach(function (p) { pf.appendChild(el("option", { value: p }, p)); ap.appendChild(el("option", { value: p }, p)); });
   pf.addEventListener("change", function () { state.plat = pf.value; renderAll(); });
-  function shift(n) { var d = parse(state.sel); d.setDate(d.getDate() + n); var s = iso(d); if (s >= iso(new Date(MONTH.y, MONTH.m, 1)) && s <= iso(new Date(MONTH.y, MONTH.m + 1, 6))) select(s); }
+  function goTo(s) { var d = parse(s); if (d.getMonth() !== MONTH.m || d.getFullYear() !== MONTH.y) { MONTH = { y: d.getFullYear(), m: d.getMonth() }; state.sel = s; renderAll(); } else select(s); }
+  function shift(n) { var d = parse(state.sel); d.setDate(d.getDate() + n); goTo(iso(d)); }
+  function moveMonth(k) { var f = new Date(MONTH.y, MONTH.m + k, 1); MONTH = { y: f.getFullYear(), m: f.getMonth() }; var t = todayIso(), pt = parse(t); state.sel = (pt.getMonth() === MONTH.m && pt.getFullYear() === MONTH.y) ? t : iso(f); renderAll(); }
+  ["prevMonth", "prevMonth2"].forEach(function (id) { document.getElementById(id).addEventListener("click", function () { moveMonth(-1); }); });
+  ["nextMonth", "nextMonth2"].forEach(function (id) { document.getElementById(id).addEventListener("click", function () { moveMonth(1); }); });
   document.getElementById("prevDay").addEventListener("click", function () { shift(-1); });
   document.getElementById("nextDay").addEventListener("click", function () { shift(1); });
-  document.getElementById("todayBtn").addEventListener("click", function () { var t = todayIso(); if (parse(t).getMonth() === MONTH.m && parse(t).getFullYear() === MONTH.y) select(t); });
+  document.getElementById("todayBtn").addEventListener("click", function () { goTo(todayIso()); });
 
   var rd = document.getElementById("reportDlg");
   document.getElementById("reportBtn").addEventListener("click", function () { buildReport(); if (rd.showModal) rd.showModal(); else rd.setAttribute("open", ""); });
