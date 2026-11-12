@@ -285,14 +285,13 @@ html, body { overflow-x: hidden; }
   <header class="top">
     <div>
       <h1>Posting Board</h1>
-      <div class="sub">3S Business, BizCity Group, 3S Group and 3S HR Consulting, <span id="subMonth">November 2026</span>. Every planned post, its status and its live link.</div>
+      <div class="sub">3S Business, BizCity Group and 3S HR Consulting, <span id="subMonth">November 2026</span>. Every planned post, its status and its live link.</div>
     </div>
     <div class="controls">
       <div class="seg" role="group" aria-label="Brand">
         <button type="button" data-brand="all" aria-pressed="true">All brands</button>
         <button type="button" data-brand="3S Business" aria-pressed="false">3S Business</button>
         <button type="button" data-brand="BizCity Group" aria-pressed="false">BizCity Group</button>
-        <button type="button" data-brand="3S Group" aria-pressed="false">3S Group</button>
         <button type="button" data-brand="3S HR Consulting" aria-pressed="false">3S HR</button>
       </div>
       <select class="f" id="platFilter" aria-label="Platform"><option value="all">All platforms</option></select>
@@ -414,7 +413,6 @@ html, body { overflow-x: hidden; }
           <option value="all">All brands</option>
           <option value="3S Business">3S Business</option>
           <option value="BizCity Group">BizCity Group</option>
-          <option value="3S Group">3S Group</option>
           <option value="3S HR Consulting">3S HR Consulting</option>
         </select>
       </label>
@@ -436,7 +434,7 @@ html, body { overflow-x: hidden; }
     <div class="row">
       <label for="aDate">Date <input class="f" type="date" id="aDate" required></label>
       <label for="aBrand">Brand
-        <select class="f" id="aBrand"><option>3S Business</option><option>BizCity Group</option><option>3S Group</option><option>3S HR Consulting</option></select>
+        <select class="f" id="aBrand"><option>3S Business</option><option>BizCity Group</option><option>3S HR Consulting</option></select>
       </label>
       <label for="aPlat">Platform
         <select class="f" id="aPlat"></select>
@@ -469,7 +467,8 @@ html, body { overflow-x: hidden; }
 (function () {
   var PLATFORMS = ["WhatsApp Channel", "Instagram", "Facebook", "LinkedIn", "TikTok", "YouTube Shorts", "Google Business Profile", "Blog", "LinkedIn (blog post)"];
   var STATUSES = ["Planned", "Ready", "Posted", "Skipped"];
-  var BRANDS = ["3S Business", "BizCity Group", "3S Group", "3S HR Consulting"];
+  var BRANDS = ["3S Business", "BizCity Group", "3S HR Consulting"];
+  var HIDDEN_BRANDS = ["3S Group"]; // hidden from the board for now (12 Nov 2026); posts are kept in Supabase
   var BCOL = { "3S Business": "var(--brand3s)", "BizCity Group": "var(--brandbc)", "3S Group": "var(--brandgr)", "3S HR Consulting": "var(--brandhr)" };
   var BSHORT = { "3S Business": "3S Business", "BizCity Group": "BizCity", "3S Group": "3S Group", "3S HR Consulting": "3S HR" };
   var BRGB = { "3S Business": [45, 82, 117], "BizCity Group": [154, 116, 64], "3S Group": [91, 74, 139], "3S HR Consulting": [47, 125, 109] };
@@ -1303,7 +1302,7 @@ html, body { overflow-x: hidden; }
     var timer = setTimeout(function () { notice("The board cannot be reached right now. What you see may be out of date."); }, 10000);
     db.collection("posts").onSnapshot(function (snap) {
       if (!snap.metadata.fromCache) { clearTimeout(timer); notice(""); }
-      var next = {}; snap.docs.forEach(function (d) { if (d.exists) next[d.id] = d.data(); });
+      var next = {}; snap.docs.forEach(function (d) { if (d.exists && HIDDEN_BRANDS.indexOf((d.data() || {}).brand) < 0) next[d.id] = d.data(); });
       posts = next;
       if (!snap.size && !snap.metadata.fromCache) { document.getElementById("dayBody").textContent = "No posts on the board yet."; }
       renderAll();
