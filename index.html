@@ -273,6 +273,26 @@ html, body { overflow-x: hidden; }
   .tile .v { font-size: 19px; }
   .btn, select.f { padding: 6px 10px; }
 }
+/* phones: grid tracks must not grow to fit the widest row */
+.wrap, .view, .main { grid-template-columns: minmax(0, 1fr); }
+.wrap > *, .view > *, .main > * { min-width: 0; }
+@media (min-width: 861px) { .main { grid-template-columns: 300px minmax(0, 1fr); } }
+@media (max-width: 860px) {
+  header.top > div:first-child { flex: 1 1 100%; min-width: 0; }
+  header.top > .controls { flex: 1 1 100%; margin-right: -48px; }
+  .controls .seg { display: flex; width: 100%; }
+  .controls .seg button { padding: 7px 4px; font-size: 13px; line-height: 1.25; }
+  header.top .controls #platFilter { flex: 1 1 140px; min-width: 0; }
+  .hidebar { flex-wrap: wrap; justify-content: flex-start; }
+  .grid7 { gap: 3px; }
+  .cell { height: 38px; font-size: 12px; }
+  .cell.other { font-size: 9px; }
+  .ccal-head .mnav { width: 100%; justify-content: space-between; }
+  .ccal-head .controls { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 10px; align-items: center; }
+  .ccal-head .controls select.f { width: 100%; min-width: 0; }
+  .ccal-head .controls > .seg, .ccal-head .controls > .btn { grid-column: 1 / -1; }
+  .ccal-head .controls > .btn { width: 100%; }
+}
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 .monthhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
 .monthhead h2 { margin: 0; flex: 1; text-align: center; }
