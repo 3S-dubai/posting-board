@@ -551,11 +551,13 @@ html, body { overflow-x: hidden; }
       if (p.slot) p.type = p.slot + " · " + (p.type || "");
       if (p.socialRef) {
         var SOC = ["Instagram", "Facebook", "LinkedIn", "TikTok", "YouTube Shorts"];
-        /* optional socialMatch "reel" | "carousel": one share message per creative when a day has both */
+        /* optional socialMatch "reel" | "carousel" | "poster": one share message per creative when a day has two */
         var kindOk = function (q) {
           if (!p.socialMatch) return true;
-          var isReel = /reel|video/i.test(q.type || "");
-          return p.socialMatch === "reel" ? isReel : !isReel;
+          var t = q.type || "", isReel = /reel|video/i.test(t), isCar = !isReel && /carousel/i.test(t);
+          if (p.socialMatch === "reel") return isReel;
+          if (p.socialMatch === "poster") return !isReel && !isCar;
+          return p.socialMatch === "carousel" ? isCar : !isReel;
         };
         var links = [];
         SOC.forEach(function (pl) {
