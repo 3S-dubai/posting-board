@@ -111,6 +111,7 @@ img.flag { height: 0.95em; width: auto; vertical-align: -0.12em; border-radius: 
 .st-Posted { background: var(--okbg); color: var(--ok); }
 .st-Skipped { background: var(--idlebg); color: var(--idle); text-decoration: line-through; }
 .st-Overdue { background: var(--badbg); color: var(--bad); }
+.st-EditPending { background: var(--warnbg); color: var(--warn); }
 select.status { border: 1px solid var(--line); border-radius: 999px; padding: 3px 8px; font-size: 12px; font-weight: 600; background: var(--panel); }
 input.link { width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; background: var(--panel); }
 a.open { color: var(--accent); font-size: 12px; white-space: nowrap; }
@@ -322,7 +323,7 @@ html, body { overflow-x: hidden; }
         <label class="fine" for="typeSel">Type</label>
         <select class="f" id="typeSel"><option value="all">All types</option></select>
         <label class="fine" for="stSel">Status</label>
-        <select class="f" id="stSel"><option value="all">All statuses</option><option value="Planned">Planned</option><option value="Ready">Ready</option><option value="Overdue">Overdue</option><option value="Posted">Posted</option><option value="Skipped">Skipped</option><option value="open">Not posted yet (planned, ready, overdue)</option></select>
+        <select class="f" id="stSel"><option value="all">All statuses</option><option value="Planned">Planned</option><option value="Ready">Ready</option><option value="Overdue">Overdue</option><option value="Edit pending">Edit pending (reels)</option><option value="Posted">Posted</option><option value="Skipped">Skipped</option><option value="open">Not posted yet (planned, edit pending, ready, overdue)</option></select>
         <div class="seg" role="group" aria-label="Layout">
           <button type="button" id="layCal" aria-pressed="true">Calendar</button>
           <button type="button" id="layTbl" aria-pressed="false">Table</button>
@@ -469,6 +470,8 @@ html, body { overflow-x: hidden; }
 (function () {
   var PLATFORMS = ["WhatsApp Channel", "Instagram", "Facebook", "LinkedIn", "TikTok", "YouTube Shorts", "Google Business Profile", "Blog", "LinkedIn (blog post)"];
   var STATUSES = ["Planned", "Ready", "Posted", "Skipped"];
+  var REEL_STATUSES = ["Planned", "Edit pending", "Ready", "Posted", "Skipped"];
+  function stc(s) { return "st-" + String(s).replace(/\s+(\w)/g, function (m, c) { return c.toUpperCase(); }); }
   var BRANDS = ["3S Business", "BizCity Group", "3S Group", "3S HR Consulting"];
   // 3S Group: only its blogs show for now (12 Nov 2026); its social posts are kept in Supabase but hidden
   function hiddenPost(p) { return !!p && p.brand === "3S Group" && p.platform !== "Blog"; }
@@ -688,8 +691,8 @@ html, body { overflow-x: hidden; }
   function statusControl(p, prefix) {
     var box = el("div"); var es = effStatus(p);
     if (editable()) {
-      var sel = el("select", { class: "status st-" + es, id: prefix + p.id, "aria-label": "Status for " + p.brand + " " + p.platform });
-      STATUSES.forEach(function (s) { var o = el("option", { value: s }, s); if ((p.status || "Planned") === s) o.selected = true; sel.appendChild(o); });
+      var sel = el("select", { class: "status " + stc(es), id: prefix + p.id, "aria-label": "Status for " + p.brand + " " + p.platform });
+      (typeCat(p) === "Reel / Video" || p.status === "Edit pending" ? REEL_STATUSES : STATUSES).forEach(function (s) { var o = el("option", { value: s }, s); if ((p.status || "Planned") === s) o.selected = true; sel.appendChild(o); });
       sel.addEventListener("change", function () {
         if (sel.value === "Posted" && !safeUrl((posts[p.id] || {}).link)) {
           sel.value = (posts[p.id] || {}).status || "Planned";
@@ -701,7 +704,7 @@ html, body { overflow-x: hidden; }
       });
       box.appendChild(sel);
       if (es === "Overdue") box.appendChild(el("div", { class: "pill st-Overdue", style: "margin-top:4px" }, "Overdue"));
-    } else box.appendChild(el("span", { class: "pill st-" + es }, es));
+    } else box.appendChild(el("span", { class: "pill " + stc(es) }, es));
     return box;
   }
   function linkControl(p, prefix) {
@@ -802,7 +805,7 @@ html, body { overflow-x: hidden; }
           // a chip per platform; click one to open its status and link
           var chips = el("div", { class: "achips" }), panes = el("div", { class: "apanes" });
           r.forEach(function (x) {
-            var chip = el("button", { type: "button", class: "achip st-" + effStatus(x), "aria-expanded": String(!!openAttn[x.id]), title: x.platform + ": " + effStatus(x) + ". Click to add the link." }, x.platform);
+            var chip = el("button", { type: "button", class: "achip " + stc(effStatus(x)), "aria-expanded": String(!!openAttn[x.id]), title: x.platform + ": " + effStatus(x) + ". Click to add the link." }, x.platform);
             var pane = el("div", { class: "apane" }); pane.hidden = !openAttn[x.id];
             pane.appendChild(el("div", { class: "aplat" }, x.platform + (x.type && types.length > 1 ? " · " + x.type : "")));
             var c = el("div", { class: "ctl" }); c.appendChild(statusControl(x, "ast-")); c.appendChild(linkControl(x, "aln-"));
@@ -825,7 +828,7 @@ html, body { overflow-x: hidden; }
   }
 
   /* ---------- content calendar tab ---------- */
-  var STCOL = { Posted: "var(--ok)", Ready: "var(--info)", Planned: "var(--idle)", Overdue: "var(--bad)", Skipped: "var(--line)" };
+  var STCOL = { Posted: "var(--ok)", Ready: "var(--info)", Planned: "var(--idle)", Overdue: "var(--bad)", Skipped: "var(--line)", "Edit pending": "var(--warn)" };
   // one label per kind of content, so "Carousel (5 slides)" and "Carousel" sort together
   var TYPE_ORDER = ["Poster", "Carousel", "Reel / Video", "GBP update", "Blog article", "LinkedIn blog post", "Blog share", "Social share", "Ask 3S", "Workspace Tip", "Poll", "Checklist", "Inside BizCity", "Countdown", "Special day"];
   function typeCat(p) {
@@ -1005,7 +1008,7 @@ html, body { overflow-x: hidden; }
       tr.appendChild(el("td", { class: "plat" }, p.platform));
       tr.appendChild(el("td", { class: "type" }, p.type || ""));
       tr.appendChild(rich("td", { class: "title msgtext" }, p.message || p.title || ""));
-      var st = el("td"); st.appendChild(el("span", { class: "pill st-" + es }, es)); tr.appendChild(st);
+      var st = el("td"); st.appendChild(el("span", { class: "pill " + stc(es) }, es)); tr.appendChild(st);
       var ln = el("td", { class: "ln" }); var u = safeUrl(p.link);
       if (u) { var a = el("a", { href: u, target: "_blank", rel: "noopener noreferrer" }, "Open post"); a.addEventListener("click", function (e) { e.stopPropagation(); }); ln.appendChild(a); }
       else ln.appendChild(el("span", { class: "fine" }, "-"));
