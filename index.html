@@ -21,6 +21,7 @@
   --brandbc: #9a7440;
   --brandgr: #5b4a8b;
   --brandhr: #2f7d6d;
+  --brandqm: #b0306f;
   --ok: #1e7a4c; --okbg: #e3f4ea;
   --warn: #9a6500; --warnbg: #fdf1d8;
   --bad: #b3261e; --badbg: #fbe4e2;
@@ -33,7 +34,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #11161c; --panel: #19212a; --ink: #e6ebf0; --muted: #9aa8b5; --line: #2b3641;
-    --accent: #8fb6dc; --brand3s: #8fb6dc; --brandbc: #d2a86b; --brandgr: #b3a5e0; --brandhr: #7fcfbd;
+    --accent: #8fb6dc; --brand3s: #8fb6dc; --brandbc: #d2a86b; --brandgr: #b3a5e0; --brandhr: #7fcfbd; --brandqm: #ef8fbf;
     --ok: #6fd19b; --okbg: #17352a; --warn: #f0c060; --warnbg: #3a2e12;
     --bad: #ff8a80; --badbg: #3d1c1a; --info: #8cbcf5; --infobg: #172c45;
     --idle: #a3afbb; --idlebg: #222c36; color-scheme: dark;
@@ -41,7 +42,7 @@
 }
 :root[data-theme="dark"] {
   --bg: #11161c; --panel: #19212a; --ink: #e6ebf0; --muted: #9aa8b5; --line: #2b3641;
-  --accent: #8fb6dc; --brand3s: #8fb6dc; --brandbc: #d2a86b; --brandgr: #b3a5e0; --brandhr: #7fcfbd;
+  --accent: #8fb6dc; --brand3s: #8fb6dc; --brandbc: #d2a86b; --brandgr: #b3a5e0; --brandhr: #7fcfbd; --brandqm: #ef8fbf;
   --ok: #6fd19b; --okbg: #17352a; --warn: #f0c060; --warnbg: #3a2e12;
   --bad: #ff8a80; --badbg: #3d1c1a; --info: #8cbcf5; --infobg: #172c45;
   --idle: #a3afbb; --idlebg: #222c36; color-scheme: dark;
@@ -306,7 +307,7 @@ html, body { overflow-x: hidden; }
   <header class="top">
     <div>
       <h1>Posting Board</h1>
-      <div class="sub">3S Business, BizCity Group, 3S Group (blogs) and 3S HR Consulting, <span id="subMonth">November 2026</span>. Every planned post, its status and its live link.</div>
+      <div class="sub">3S Business, BizCity Group, 3S Group (blogs), 3S HR Consulting and Quirk Media, <span id="subMonth">November 2026</span>. Every planned post, its status and its live link.</div>
     </div>
     <div class="controls">
       <div class="seg" role="group" aria-label="Brand">
@@ -315,6 +316,7 @@ html, body { overflow-x: hidden; }
         <button type="button" data-brand="BizCity Group" aria-pressed="false">BizCity Group</button>
         <button type="button" data-brand="3S Group" aria-pressed="false">3S Group</button>
         <button type="button" data-brand="3S HR Consulting" aria-pressed="false">3S HR</button>
+        <button type="button" data-brand="Quirk Media" aria-pressed="false">Quirk</button>
       </div>
       <select class="f" id="platFilter" aria-label="Platform"><option value="all">All platforms</option></select>
       <button type="button" class="btn" id="addBtn" hidden>Add post</button>
@@ -436,7 +438,7 @@ html, body { overflow-x: hidden; }
           <option value="3S Business">3S Business</option>
           <option value="BizCity Group">BizCity Group</option>
           <option value="3S Group">3S Group</option>
-          <option value="3S HR Consulting">3S HR Consulting</option>
+          <option value="3S HR Consulting">3S HR Consulting</option><option value="Quirk Media">Quirk Media</option>
         </select>
       </label>
     </div>
@@ -457,7 +459,7 @@ html, body { overflow-x: hidden; }
     <div class="row">
       <label for="aDate">Date <input class="f" type="date" id="aDate" required></label>
       <label for="aBrand">Brand
-        <select class="f" id="aBrand"><option>3S Business</option><option>BizCity Group</option><option>3S Group</option><option>3S HR Consulting</option></select>
+        <select class="f" id="aBrand"><option>3S Business</option><option>BizCity Group</option><option>3S Group</option><option>3S HR Consulting</option><option>Quirk Media</option></select>
       </label>
       <label for="aPlat">Platform
         <select class="f" id="aPlat"></select>
@@ -492,13 +494,13 @@ html, body { overflow-x: hidden; }
   var STATUSES = ["Planned", "Ready", "Posted", "Skipped"];
   var REEL_STATUSES = ["Planned", "Edit pending", "Ready", "Posted", "Skipped"];
   function stc(s) { return "st-" + String(s).replace(/\s+(\w)/g, function (m, c) { return c.toUpperCase(); }); }
-  var BRANDS = ["3S Business", "BizCity Group", "3S Group", "3S HR Consulting"];
+  var BRANDS = ["3S Business", "BizCity Group", "3S Group", "3S HR Consulting", "Quirk Media"];
   // 3S Group: only its blogs show for now (12 Nov 2026); its social posts are kept in Supabase but hidden
   function hiddenPost(p) { return !!p && p.brand === "3S Group" && p.platform !== "Blog"; }
-  var BCOL = { "3S Business": "var(--brand3s)", "BizCity Group": "var(--brandbc)", "3S Group": "var(--brandgr)", "3S HR Consulting": "var(--brandhr)" };
-  var BSHORT = { "3S Business": "3S Business", "BizCity Group": "BizCity", "3S Group": "3S Group", "3S HR Consulting": "3S HR" };
-  var BRGB = { "3S Business": [45, 82, 117], "BizCity Group": [154, 116, 64], "3S Group": [91, 74, 139], "3S HR Consulting": [47, 125, 109] };
-  var BUTM = { "3S Business": "3s", "BizCity Group": "bizcity", "3S Group": "3sgroup", "3S HR Consulting": "3shr" };
+  var BCOL = { "3S Business": "var(--brand3s)", "BizCity Group": "var(--brandbc)", "3S Group": "var(--brandgr)", "3S HR Consulting": "var(--brandhr)", "Quirk Media": "var(--brandqm)" };
+  var BSHORT = { "3S Business": "3S Business", "BizCity Group": "BizCity", "3S Group": "3S Group", "3S HR Consulting": "3S HR", "Quirk Media": "Quirk" };
+  var BRGB = { "3S Business": [45, 82, 117], "BizCity Group": [154, 116, 64], "3S Group": [91, 74, 139], "3S HR Consulting": [47, 125, 109], "Quirk Media": [176, 48, 111] };
+  var BUTM = { "3S Business": "3s", "BizCity Group": "bizcity", "3S Group": "3sgroup", "3S HR Consulting": "3shr", "Quirk Media": "quirk" };
   function bcol(b) { return BCOL[b] || "var(--idle)"; }
   var MONTH = (function () { var n = new Date(); return { y: n.getFullYear(), m: n.getMonth() }; })(); // shown month (0-based), starts on the current month
   function monthLabel() { return new Date(MONTH.y, MONTH.m, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" }); }
