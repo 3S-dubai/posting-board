@@ -307,7 +307,7 @@ html, body { overflow-x: hidden; }
   <header class="top">
     <div>
       <h1>Posting Board</h1>
-      <div class="sub">3S Business, BizCity Group, 3S Group (blogs), 3S HR Consulting and Quirk Media, <span id="subMonth">November 2026</span>. Every planned post, its status and its live link.</div>
+      <div class="sub">3S Business, BizCity Group, 3S Group (blogs and Instagram), 3S HR Consulting and Quirk Media, <span id="subMonth">November 2026</span>. Every planned post, its status and its live link.</div>
     </div>
     <div class="controls">
       <div class="seg" role="group" aria-label="Brand">
@@ -496,7 +496,7 @@ html, body { overflow-x: hidden; }
   function stc(s) { return "st-" + String(s).replace(/\s+(\w)/g, function (m, c) { return c.toUpperCase(); }); }
   var BRANDS = ["3S Business", "BizCity Group", "3S Group", "3S HR Consulting", "Quirk Media"];
   // 3S Group: only its blogs show for now (12 Nov 2026); its social posts are kept in Supabase but hidden
-  function hiddenPost(p) { return !!p && p.brand === "3S Group" && p.platform !== "Blog"; }
+  function hiddenPost(p) { return !!p && p.brand === "3S Group" && p.platform !== "Blog" && p.platform !== "Instagram"; }
   var BCOL = { "3S Business": "var(--brand3s)", "BizCity Group": "var(--brandbc)", "3S Group": "var(--brandgr)", "3S HR Consulting": "var(--brandhr)", "Quirk Media": "var(--brandqm)" };
   var BSHORT = { "3S Business": "3S Business", "BizCity Group": "BizCity", "3S Group": "3S Group", "3S HR Consulting": "3S HR", "Quirk Media": "Quirk" };
   var BRGB = { "3S Business": [45, 82, 117], "BizCity Group": [154, 116, 64], "3S Group": [91, 74, 139], "3S HR Consulting": [47, 125, 109], "Quirk Media": [176, 48, 111] };
