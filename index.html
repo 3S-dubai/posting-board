@@ -612,6 +612,7 @@ html, body { overflow-x: hidden; }
     if (p.date < todayIso()) return "Overdue";
     return p.status || "Planned";
   }
+  function realStatus(p) { return p.status || "Planned"; }
   function ratio(arr) {
     var due = arr.filter(function (p) { return p.status !== "Skipped"; });
     var done = due.filter(function (p) { return p.status === "Posted"; });
@@ -909,7 +910,7 @@ html, body { overflow-x: hidden; }
       cell.appendChild(dn);
       items.forEach(function (p) {
         count++; if (p.status === "Posted") done++;
-        var es = effStatus(p);
+        var es = realStatus(p);
         var b = el("button", { type: "button", class: "citem", title: p.brand + " | " + p.platform + " | " + es + "\n" + (p.message || p.title || "") });
         b.style.setProperty("--st", STCOL[es] || "var(--idle)");
         b.style.setProperty("--b", bcol(p.brand));
@@ -949,7 +950,7 @@ html, body { overflow-x: hidden; }
     lastTableRows.forEach(function (p) {
       var d = parse(p.date);
       lines.push([p.date, d.toLocaleDateString("en-GB", { weekday: "short" }), p.brand, p.platform, p.slot || "", String(p.type || "").replace(/^(Morning|Evening) \u00b7 /, ""),
-        p.message || p.title || "", effStatus(p), p.link || "", p.pendingBlog || p.pendingSocial ? "" : (p.postLink || "")].map(csvCell).join(","));
+        p.message || p.title || "", realStatus(p), p.link || "", p.pendingBlog || p.pendingSocial ? "" : (p.postLink || "")].map(csvCell).join(","));
     });
     var brandPart = state.brand === "all" ? "All brands" : state.brand;
     var chanPart = lastTableChan === "all" ? "All channels" : lastTableChan;
@@ -1030,7 +1031,7 @@ html, body { overflow-x: hidden; }
         lastDate = p.date;
         var dr = el("tr", { class: "dayrow" }); dr.appendChild(el("td", { colspan: "7" }, fmtLong(p.date))); tb.appendChild(dr);
       }
-      var es = effStatus(p);
+      var es = realStatus(p);
       var tr = el("tr", { class: "prow", tabindex: "0", title: "Open on the posting board" });
       tr.appendChild(el("td", { class: "fine" }, fmtShort(p.date)));
       var co = el("td", { class: "co" }, p.brand); co.style.setProperty("--b", bcol(p.brand)); tr.appendChild(co);
