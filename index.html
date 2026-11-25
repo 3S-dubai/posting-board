@@ -24,7 +24,7 @@
   --brandqm: #b0306f;
   --ok: #1e7a4c; --okbg: #e3f4ea;
   --warn: #9a6500; --warnbg: #fdf1d8;
-  --bad: #b3261e; --badbg: #fbe4e2;
+  --bad: #b3261e; --badbg: #fbe4e2; --late2: #e8590c;
   --info: #1f5fa8; --infobg: #e3eefb;
   --idle: #6b7785; --idlebg: #eef1f4;
   --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -36,7 +36,7 @@
     --bg: #11161c; --panel: #19212a; --ink: #e6ebf0; --muted: #9aa8b5; --line: #2b3641;
     --accent: #8fb6dc; --brand3s: #8fb6dc; --brandbc: #d2a86b; --brandgr: #b3a5e0; --brandhr: #7fcfbd; --brandqm: #ef8fbf;
     --ok: #6fd19b; --okbg: #17352a; --warn: #f0c060; --warnbg: #3a2e12;
-    --bad: #ff8a80; --badbg: #3d1c1a; --info: #8cbcf5; --infobg: #172c45;
+    --bad: #ff8a80; --badbg: #3d1c1a; --info: #8cbcf5; --infobg: #172c45; --late2: #ffa94d;
     --idle: #a3afbb; --idlebg: #222c36; color-scheme: dark;
   }
 }
@@ -44,7 +44,7 @@
   --bg: #11161c; --panel: #19212a; --ink: #e6ebf0; --muted: #9aa8b5; --line: #2b3641;
   --accent: #8fb6dc; --brand3s: #8fb6dc; --brandbc: #d2a86b; --brandgr: #b3a5e0; --brandhr: #7fcfbd; --brandqm: #ef8fbf;
   --ok: #6fd19b; --okbg: #17352a; --warn: #f0c060; --warnbg: #3a2e12;
-  --bad: #ff8a80; --badbg: #3d1c1a; --info: #8cbcf5; --infobg: #172c45;
+  --bad: #ff8a80; --badbg: #3d1c1a; --info: #8cbcf5; --infobg: #172c45; --late2: #ffa94d;
   --idle: #a3afbb; --idlebg: #222c36; color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -88,6 +88,7 @@ img.flag { height: 0.95em; width: auto; vertical-align: -0.12em; border-radius: 
 .cell.s-done .dot { background: var(--ok); }
 .cell.s-part .dot { background: var(--warn); }
 .cell.s-late .dot { background: var(--bad); }
+.cell.s-late2 .dot { background: var(--late2); }
 .cell.s-none .dot { display: none; }
 .cell.today { border-color: var(--accent); border-width: 2px; }
 .cell[aria-selected="true"] { background: var(--accent); color: var(--panel); }
@@ -389,7 +390,8 @@ html, body { overflow-x: hidden; }
       <div class="legend">
         <span style="--c: var(--ok)">All posted</span>
         <span style="--c: var(--warn)">Partly posted</span>
-        <span style="--c: var(--bad)">Overdue</span>
+        <span style="--c: var(--bad)">Social posts overdue</span>
+        <span style="--c: var(--late2)">Only WhatsApp Channel / blog overdue</span>
         <span style="--c: var(--idle)">Upcoming</span>
       </div>
     </section>
@@ -650,7 +652,9 @@ html, body { overflow-x: hidden; }
       var r = ratio(items); var cls = "s-none";
       if (items.length) {
         if (r.total && r.done === r.total) cls = "s-done";
-        else if (items.some(function (p) { return effStatus(p) === "Overdue"; })) cls = "s-late";
+        else if (items.some(function (p) { return effStatus(p) === "Overdue"; }))
+          // red: a social post is overdue; orange: only WhatsApp Channel or blog items are overdue
+          cls = items.some(function (p) { return effStatus(p) === "Overdue" && p.platform !== "WhatsApp Channel" && p.platform !== "Blog"; }) ? "s-late" : "s-late2";
         else if (r.done > 0) cls = "s-part";
         else cls = "s-up";
       }
