@@ -389,8 +389,8 @@ html, body { overflow-x: hidden; }
       <div class="grid7" id="calGrid"></div>
       <div class="legend">
         <span style="--c: var(--ok)">All posted</span>
-        <span style="--c: var(--warn)">Partly posted</span>
-        <span style="--c: var(--bad)">Social posts overdue</span>
+        <span style="--c: var(--warn)">Partly posted (some social still pending)</span>
+        <span style="--c: var(--bad)">Nothing posted, social overdue</span>
         <span style="--c: var(--late2)">Only WhatsApp Channel / blog overdue</span>
         <span style="--c: var(--idle)">Upcoming</span>
       </div>
@@ -653,8 +653,9 @@ html, body { overflow-x: hidden; }
       if (items.length) {
         if (r.total && r.done === r.total) cls = "s-done";
         else if (items.some(function (p) { return effStatus(p) === "Overdue"; }))
-          // red: a social post is overdue; orange: only WhatsApp Channel or blog items are overdue
-          cls = items.some(function (p) { return effStatus(p) === "Overdue" && p.platform !== "WhatsApp Channel" && p.platform !== "Blog"; }) ? "s-late" : "s-late2";
+          // social post overdue: red if nothing was posted that day, brown if some were;
+          // orange: only WhatsApp Channel or blog items are overdue
+          cls = items.some(function (p) { return effStatus(p) === "Overdue" && p.platform !== "WhatsApp Channel" && p.platform !== "Blog"; }) ? (r.done > 0 ? "s-part" : "s-late") : "s-late2";
         else if (r.done > 0) cls = "s-part";
         else cls = "s-up";
       }
