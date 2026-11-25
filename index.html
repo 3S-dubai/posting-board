@@ -1017,7 +1017,7 @@ html, body { overflow-x: hidden; }
   function renderContentTable(all, chan) {
     var t = document.getElementById("ccalTbl"); t.textContent = "";
     var thead = el("thead"); var hr = el("tr");
-    ["Date", "Company", "Channel", "Type", "Content", "Status", "Live link"].forEach(function (x) { hr.appendChild(el("th", { scope: "col" }, x)); });
+    ["Date", "Company", "Channel", "Type", "Status", "Content", "Live link"].forEach(function (x) { hr.appendChild(el("th", { scope: "col" }, x)); });
     thead.appendChild(hr); t.appendChild(thead);
     var tb = el("tbody");
     var rows = all.filter(function (p) { return p.date >= iso(new Date(MONTH.y, MONTH.m, 1)) && p.date <= iso(new Date(MONTH.y, MONTH.m + 1, 1)); })
@@ -1036,8 +1036,8 @@ html, body { overflow-x: hidden; }
       var co = el("td", { class: "co" }, p.brand); co.style.setProperty("--b", bcol(p.brand)); tr.appendChild(co);
       tr.appendChild(el("td", { class: "plat" }, p.platform));
       tr.appendChild(el("td", { class: "type" }, p.type || ""));
-      tr.appendChild(rich("td", { class: "title msgtext" }, p.message || p.title || ""));
       var st = el("td"); st.appendChild(el("span", { class: "pill " + stc(es) }, es)); tr.appendChild(st);
+      tr.appendChild(rich("td", { class: "title msgtext" }, p.message || p.title || ""));
       var ln = el("td", { class: "ln" }); var u = safeUrl(p.link);
       if (u) { var a = el("a", { href: u, target: "_blank", rel: "noopener noreferrer" }, "Open post"); a.addEventListener("click", function (e) { e.stopPropagation(); }); ln.appendChild(a); }
       else ln.appendChild(el("span", { class: "fine" }, "-"));
