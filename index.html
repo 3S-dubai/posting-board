@@ -731,11 +731,13 @@ html, body { overflow-x: hidden; }
           return;
         }
         save(p.id, { status: sel.value });
-        if (sel.value === "Ready") {
-          // the same post (same day, brand and content) is ready on every platform it goes to
+        // the same creative (same day, brand and content) is ready on every platform it is posted to.
+        // WhatsApp Channel only shares the links, and blogs are their own item, so they are left alone.
+        var notCreative = function (x) { return /whatsapp|blog/i.test(x.platform || ""); };
+        if (sel.value === "Ready" && !notCreative(p)) {
           var me = posts[p.id] || p;
           var sibs = list().filter(function (q) {
-            return q.id !== p.id && q.date === me.date && q.brand === me.brand && (q.title || "") === (me.title || "") &&
+            return q.id !== p.id && !notCreative(q) && q.date === me.date && q.brand === me.brand && (q.title || "") === (me.title || "") &&
               q.status !== "Ready" && q.status !== "Posted" && q.status !== "Skipped";
           });
           if (sibs.length) Promise.all(sibs.map(function (q) { return save(q.id, { status: "Ready" }); })).then(function () {
