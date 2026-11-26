@@ -731,6 +731,17 @@ html, body { overflow-x: hidden; }
           return;
         }
         save(p.id, { status: sel.value });
+        if (sel.value === "Ready") {
+          // the same post (same day, brand and content) is ready on every platform it goes to
+          var me = posts[p.id] || p;
+          var sibs = list().filter(function (q) {
+            return q.id !== p.id && q.date === me.date && q.brand === me.brand && (q.title || "") === (me.title || "") &&
+              q.status !== "Ready" && q.status !== "Posted" && q.status !== "Skipped";
+          });
+          if (sibs.length) Promise.all(sibs.map(function (q) { return save(q.id, { status: "Ready" }); })).then(function () {
+            notice("Also marked Ready on " + sibs.map(function (q) { return q.platform; }).join(", ") + ".");
+          });
+        }
       });
       box.appendChild(sel);
       if (es === "Overdue") box.appendChild(el("div", { class: "pill st-Overdue", style: "margin-top:4px" }, "Overdue"));
