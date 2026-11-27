@@ -296,6 +296,9 @@ html, body { overflow-x: hidden; }
   .ccal-head .controls > .btn { width: 100%; }
 }
 @media (min-width: 1600px) { .main { grid-template-columns: 340px minmax(0, 1fr); } .ccal-day { min-height: 140px; } }
+select.awsel { appearance: none; -webkit-appearance: none; border: 1px solid var(--line); border-radius: 6px; box-shadow: none; background: var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235d6b79' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center; padding: 6px 30px 6px 10px; font-size: 13px; font-weight: 600; min-width: 140px; cursor: pointer; }
+select.awsel:hover { border-color: var(--muted); }
+select.awsel option { color: var(--ink); font-weight: 400; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 .monthhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
 .monthhead h2 { margin: 0; flex: 1; text-align: center; }
@@ -1105,7 +1108,7 @@ html, body { overflow-x: hidden; }
 
   /* ---------- awards follow-up (stored as kind:"award" rows; they have no date/platform, so the board ignores them) ---------- */
   var AW_STATUS = ["To decide", "Preparing", "Submitted", "Shortlisted", "Won", "Not selected", "Not entering"];
-  var AW_COL = { "To decide": "var(--idle)", "Preparing": "var(--warn)", "Submitted": "var(--info)", "Shortlisted": "var(--info)", "Won": "var(--ok)", "Not selected": "var(--line)", "Not entering": "var(--line)" };
+  var AW_COL = { "To decide": "var(--idle)", "Preparing": "var(--warn)", "Submitted": "var(--info)", "Shortlisted": "var(--info)", "Won": "var(--ok)", "Not selected": "var(--muted)", "Not entering": "var(--muted)" };
   function awardList() {
     return Object.keys(posts).map(function (id) { return Object.assign({ id: id }, posts[id]); })
       .filter(function (a) { return a.kind === "award"; })
@@ -1130,8 +1133,8 @@ html, body { overflow-x: hidden; }
       if (canWrite === true) {
         var sel = el("select", { class: "f", "aria-label": "Status for " + (a.name || "award") });
         AW_STATUS.forEach(function (s) { var o = el("option", { value: s }, s); if (s === (a.status || "To decide")) o.selected = true; sel.appendChild(o); });
-        sel.style.borderLeft = "4px solid " + (AW_COL[a.status] || "var(--idle)");
-        sel.addEventListener("change", function () { save(a.id, { status: sel.value }); });
+        sel.className = "awsel"; sel.style.color = AW_COL[a.status] || "var(--ink)";
+        sel.addEventListener("change", function () { sel.style.color = AW_COL[sel.value] || "var(--ink)"; save(a.id, { status: sel.value }); });
         st.appendChild(sel);
       } else st.appendChild(el("span", { class: "pill" }, a.status || "To decide"));
       tr.appendChild(st);
