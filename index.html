@@ -299,6 +299,10 @@ html, body { overflow-x: hidden; }
 select.awsel { appearance: none; -webkit-appearance: none; border: 1px solid var(--line); border-radius: 6px; box-shadow: none; background: var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235d6b79' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center; padding: 6px 30px 6px 10px; font-size: 13px; font-weight: 600; min-width: 140px; cursor: pointer; }
 select.awsel:hover { border-color: var(--muted); }
 select.awsel option { color: var(--ink); font-weight: 400; }
+#awForm input.f { border: 1px solid var(--line); border-radius: 6px; box-shadow: none; background: var(--panel); padding: 7px 10px; font-size: 13px; }
+#awForm input.f:hover { border-color: var(--muted); }
+#awForm input.f:focus { border-color: var(--accent); outline: none; }
+#awTbl td.ln a { color: var(--accent); font-size: 13px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 .monthhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
 .monthhead h2 { margin: 0; flex: 1; text-align: center; }
