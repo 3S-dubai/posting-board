@@ -371,7 +371,7 @@ html, body { overflow-x: hidden; }
 
   <section class="panel" id="viewAwards" role="tabpanel" aria-labelledby="tabAwards" hidden>
     <h2 style="margin-top:0">Awards follow-up <span class="fine" id="awSub"></span></h2>
-    <p class="fine" style="margin:0 0 10px">Every award we are entering or watching. Change the status and the next step as things move. Sorted by deadline.</p>
+    <p class="fine" style="margin:0 0 10px">Every award we are entering or watching. Change the status as things move. Sorted by deadline.</p>
     <div class="tblwrap"><table class="tbl" id="awTbl"></table></div>
     <form id="awForm" hidden style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center">
       <input class="f" id="awName" placeholder="Award name" required style="min-width:220px">
@@ -1112,10 +1112,10 @@ html, body { overflow-x: hidden; }
   }
   function renderAwards() {
     var t = document.getElementById("awTbl"); if (!t) return; t.textContent = "";
-    var hr = el("tr"); ["Award", "For", "Deadline", "Status", "Next step / follow-up", "Link"].forEach(function (x) { hr.appendChild(el("th", { scope: "col" }, x)); });
+    var hr = el("tr"); ["Award", "For", "Deadline", "Status", "Link"].forEach(function (x) { hr.appendChild(el("th", { scope: "col" }, x)); });
     var th = el("thead"); th.appendChild(hr); t.appendChild(th);
     var tb = el("tbody"), rows = awardList(), today = todayIso(), open = 0;
-    if (!rows.length) { var er = el("tr"); er.appendChild(el("td", { colspan: "6", class: "empty" }, Object.keys(posts).length ? "No awards yet." : "Loading...")); tb.appendChild(er); }
+    if (!rows.length) { var er = el("tr"); er.appendChild(el("td", { colspan: "5", class: "empty" }, Object.keys(posts).length ? "No awards yet." : "Loading...")); tb.appendChild(er); }
     rows.forEach(function (a) {
       var tr = el("tr");
       tr.appendChild(el("td", { class: "title" }, a.name || ""));
@@ -1134,13 +1134,6 @@ html, body { overflow-x: hidden; }
         st.appendChild(sel);
       } else st.appendChild(el("span", { class: "pill" }, a.status || "To decide"));
       tr.appendChild(st);
-      var nx = el("td");
-      if (canWrite === true) {
-        var inp = el("input", { class: "f", value: a.next || "", placeholder: "e.g. Ask Arshi for numbers by 5 Dec", style: "width:100%;min-width:220px" });
-        inp.addEventListener("change", function () { save(a.id, { next: inp.value.trim() }); });
-        nx.appendChild(inp);
-      } else nx.appendChild(el("span", null, a.next || ""));
-      tr.appendChild(nx);
       var ln = el("td", { class: "ln" }), u = safeUrl(a.link);
       if (u) ln.appendChild(el("a", { href: u, target: "_blank", rel: "noopener noreferrer" }, "Open")); else ln.appendChild(el("span", { class: "fine" }, "-"));
       tr.appendChild(ln);
